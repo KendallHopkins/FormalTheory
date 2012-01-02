@@ -13,6 +13,11 @@ class FormalTheory_FiniteAutomata_State
 		$this->_finite_automata = $finite_automata;
 	}
 	
+	function getFiniteAutomata()
+	{
+		return $this->_finite_automata;
+	}
+	
 	function getIsFinal()
 	{
 		return $this->_is_final;

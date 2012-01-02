@@ -14,6 +14,14 @@ class FormalTheory_FiniteAutomata
 	private $_states = array();
 	private $_start_state = NULL;
 	
+	function __clone()
+	{
+		reset( $this->_states );
+		$old_fa = $this->_states ? current( $this->_states )->getFiniteAutomata() : NULL;
+		$this->_states = array();
+		$this->_start_state = $old_fa ? $this->importAutomata( $old_fa ) : NULL;
+	}
+	
 	function setAlphabet( array $alphabet )
 	{
 		$this->_alphabet = $alphabet;
@@ -166,6 +174,28 @@ class FormalTheory_FiniteAutomata
 		} while( $replace_array );
 	}
 	
+	function addFailureState()
+	{
+		$failure_state = NULL;
+		$this_ = $this;
+		$get_failure_state = function() use ( &$failure_state, $this_ ) {
+			if( is_null( $failure_state ) ) {
+				$failure_state = $this_->createState();
+				foreach( $this_->getAlphabet() as $symbol ) {
+					$failure_state->addTransition( $symbol, $failure_state );
+				}
+			}
+			return $failure_state;
+		};
+		foreach( $this->_states as $state ) {
+			foreach( $this->_alphabet as $symbol ) {
+				if( ! $state->transitions( $symbol ) ) {
+					$state->addTransition( $symbol, $get_failure_state() );
+				}
+			}
+		}
+	}
+	
 	function validSolutionExists()
 	{
 		$valid_solution_exists = FALSE;
@@ -226,24 +256,7 @@ class FormalTheory_FiniteAutomata
 		$fa = new self();
 		$fa->setAlphabet( $finite_automata->getAlphabet() );
 		
-		$reachable_by_transition = function( $state ) {
-			$reachable_by_symbol = array();
-			$state->walkWithClosure( function( $transition_symbol, $next_state, $data ) use ( &$reachable_by_symbol ) {
-				if( in_array( $next_state, $data, TRUE ) ) {
-					return FormalTheory_FiniteAutomata::WALK_SKIP;
-				}
-				$data[spl_object_hash( $next_state )] = $next_state;
-				if( $transition_symbol === "" ) {
-					return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-				}
-				$reachable_by_symbol[$transition_symbol] = array_key_exists( $transition_symbol, $reachable_by_symbol )
-					? array_merge( $reachable_by_symbol[$transition_symbol], $data )
-					: $data;
-				return FormalTheory_FiniteAutomata::WALK_SKIP;
-			}, FormalTheory_FiniteAutomata::WALK_TYPE_BFS, array() );
-			return $reachable_by_symbol;
-		};
-		$reachable_without_transition = function( $state ) {
+		$reachable_without_transition_array = array_map( function( $state ) {
 			$reachable_without_transition = array( $state );
 			$state->walkWithClosure( function( $transition_symbol, $next_state ) use ( &$reachable_without_transition ) {
 				if( in_array( $next_state, $reachable_without_transition, TRUE ) || $transition_symbol !== "" ) {
@@ -253,9 +266,28 @@ class FormalTheory_FiniteAutomata
 				return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
 			}, FormalTheory_FiniteAutomata::WALK_TYPE_BFS );
 			return $reachable_without_transition;
-		};
+		}, $finite_automata->_states );
 		
-		$reachable_by_transition_array = array_map( $reachable_by_transition, $finite_automata->_states );
+		$reachable_by_transition_array = array_map( function( $state ) use ( $reachable_without_transition_array ) {
+			$first_level_transition_lookup_arrays = array_map( function( $state ) {
+				$transition_lookup_array = $state->getTransitionLookupArray();
+				unset( $transition_lookup_array[""] );
+				return $transition_lookup_array;
+			}, $reachable_without_transition_array[spl_object_hash( $state )] );
+			$reachable_by_symbol = array();
+			foreach( $first_level_transition_lookup_arrays as $first_level_transition_lookup_array ) {
+				foreach( $first_level_transition_lookup_array as $transition_symbol => $next_states ) {
+					if( ! array_key_exists( $transition_symbol, $reachable_by_symbol ) ) {
+						$reachable_by_symbol[$transition_symbol] = array();
+					}
+					foreach( array_keys( $next_states ) as $next_state_hash ) {
+						$reachable_by_symbol[$transition_symbol] = array_merge( $reachable_by_symbol[$transition_symbol], $reachable_without_transition_array[$next_state_hash] );
+					}
+				}
+			}
+			return $reachable_by_symbol;
+		}, $finite_automata->_states );
+		
 		$calculate_reachable = function( array $states ) use ( $reachable_by_transition_array ) {
 			$merged_reachable_states = array();
 			foreach( $states as $state ) {
@@ -289,7 +321,7 @@ class FormalTheory_FiniteAutomata
 			}
 			return $lookup_array[$states_hash];
 		};
-		$new_start_state = $get_meta_state( $reachable_without_transition( $finite_automata->getStartState() ) );
+		$new_start_state = $get_meta_state( $reachable_without_transition_array[spl_object_hash( $finite_automata->getStartState() )] );
 		$fa->setStartState( $new_start_state );
 		while( $current_states = array_pop( $states_to_process ) ) {
 			$current_state = $get_meta_state( $current_states );
@@ -299,6 +331,16 @@ class FormalTheory_FiniteAutomata
 			}
 		}
 		
+		return $fa;
+	}
+	
+	static function negate( self $finite_automata )
+	{
+		$fa = $finite_automata->isDeterministic() ? clone $finite_automata : self::determinize( $finite_automata );
+		$fa->addFailureState();
+		foreach( $fa->_states as $state ) {
+			$state->setIsFinal( ! $state->getIsFinal() );
+		}
 		return $fa;
 	}
 	
@@ -319,6 +361,22 @@ class FormalTheory_FiniteAutomata
 	}
 	
 	static function intersection( self $finite_automata1, self $finite_automata2 )
+	{
+		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
+			throw new Exception( "different alphabet" );
+		}
+		return self::intersectionByCartesianProductMachine( $finite_automata1, $finite_automata2 );
+	}
+
+	static function intersectionByDeMorgan( self $finite_automata1, self $finite_automata2 )
+	{
+		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
+			throw new Exception( "different alphabet" );
+		}
+		return self::negate( self::determinize( self::union( self::negate( $finite_automata1 ), self::negate( $finite_automata2 ) ) ) );
+	}
+	
+	static function intersectionByCartesianProductMachine( self $finite_automata1, self $finite_automata2 )
 	{
 		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
 			throw new Exception( "different alphabet" );
@@ -345,11 +403,14 @@ class FormalTheory_FiniteAutomata
 						if( $has_null_transition ) {
 							foreach( $next_states1 as $next_state1 ) {
 								foreach( $next_states2 as $next_state2 ) {
-									if( $is_null_transition_symbol1 ) {
+									if( $is_null_transition_symbol1 && ! $new_state->hasTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] ) ) {
 										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] );
 									}
-									if( $is_null_transition_symbol2 ) {
+									if( $is_null_transition_symbol2 && ! $new_state->hasTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] ) ) {
 										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] );
+									}
+									if( $is_null_transition_symbol1 && $is_null_transition_symbol2 ) {
+										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $next_state2 )] );
 									}
 								}
 							}
