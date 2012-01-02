@@ -397,30 +397,23 @@ class FormalTheory_FiniteAutomata
 				$new_state = $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $state2 )];
 				foreach( $state1->getTransitionLookupArray() as $transition_symbol1 => $next_states1 ) {
 					foreach( $state2->getTransitionLookupArray() as $transition_symbol2 => $next_states2 ) {
-						$is_null_transition_symbol1 = $transition_symbol1 === "";
-						$is_null_transition_symbol2 = $transition_symbol2 === "";
-						$has_null_transition = $is_null_transition_symbol1 || $is_null_transition_symbol2;
-						if( $has_null_transition ) {
-							foreach( $next_states1 as $next_state1 ) {
-								foreach( $next_states2 as $next_state2 ) {
-									if( $is_null_transition_symbol1 && ! $new_state->hasTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] ) ) {
-										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] );
-									}
-									if( $is_null_transition_symbol2 && ! $new_state->hasTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] ) ) {
-										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] );
-									}
-									if( $is_null_transition_symbol1 && $is_null_transition_symbol2 ) {
-										$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $next_state2 )] );
-									}
-								}
-							}
-						} else if( $transition_symbol1 === $transition_symbol2 ) {
+						if( $transition_symbol1 === $transition_symbol2 ) {
 							foreach( $next_states1 as $next_state1 ) {
 								foreach( $next_states2 as $next_state2 ) {
 									$new_state->addTransition( (string)$transition_symbol1, $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $next_state2 )] );
 								}
 							}
 						}
+					}
+				}
+				foreach( $state1->transitions( "" ) as $next_states1 ) {
+					foreach( $next_states1 as $next_state1 ) {
+						$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] );
+					}
+				}
+				foreach( $state2->transitions( "" ) as $next_states2 ) {
+					foreach( $next_states2 as $next_state2 ) {
+						$new_state->addTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] );
 					}
 				}
 	 		}
