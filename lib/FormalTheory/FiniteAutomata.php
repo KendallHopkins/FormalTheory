@@ -78,10 +78,15 @@ class FormalTheory_FiniteAutomata
 		}
 		$output = "";
 		foreach( $this->_states as $state ) {
-			foreach( $state->getTransitionLookupArray() as $transition_symbol => $next_states ) {
-				foreach( $next_states as $next_state ) {
-					$output .= $symbol_lookup[spl_object_hash( $state )]." -> ".($transition_symbol === "" ? "λ" : $transition_symbol)." -> ".$symbol_lookup[spl_object_hash( $next_state )].PHP_EOL;
+			$transition_lookup_array = $state->getTransitionLookupArray();
+			if( $transition_lookup_array ) {
+				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
+					foreach( $next_states as $next_state ) {
+						$output .= $symbol_lookup[spl_object_hash( $state )]." -> ".($transition_symbol === "" ? "λ" : $transition_symbol)." -> ".$symbol_lookup[spl_object_hash( $next_state )].PHP_EOL;
+					}
 				}
+			} else {
+				$output .= $symbol_lookup[spl_object_hash( $state )]." (no transitions)".PHP_EOL;
 			}
 		}
 		return $output;
