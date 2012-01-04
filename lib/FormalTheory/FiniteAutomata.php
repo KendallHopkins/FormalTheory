@@ -362,9 +362,6 @@ class FormalTheory_FiniteAutomata
 	
 	static function intersection( self $finite_automata1, self $finite_automata2 )
 	{
-		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
-			throw new Exception( "different alphabet" );
-		}
 		return self::intersectionByCartesianProductMachine( $finite_automata1, $finite_automata2 );
 	}
 
