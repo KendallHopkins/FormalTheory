@@ -50,15 +50,15 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 					$a->addTransition( "1", $b );
 					$b->addTransition( "1", $c );
 					return $fa;
-				}, "/^0*10*10*$/"
+				}, "^0*10*10*$"
 			),
-			array( $even, "/^(00)*$/" ), 
-			array( $odd, "/^0(00)*$/" ),
-			array( $threes, "/^(000)*$/" ),
-			array( function() use ( $even, $odd ) { return FormalTheory_FiniteAutomata::union( $even(), $odd() ); }, "/^0*$/" ),
+			array( $even, "^(00)*$" ), 
+			array( $odd, "^0(00)*$" ),
+			array( $threes, "^(000)*$" ),
+			array( function() use ( $even, $odd ) { return FormalTheory_FiniteAutomata::union( $even(), $odd() ); }, "^0*$" ),
 			array( function() use ( $even, $odd ) { return FormalTheory_FiniteAutomata::intersection( $even(), $odd() ); }, FALSE ),
-			array( function() use ( $even, $threes ) { return FormalTheory_FiniteAutomata::intersection( $even(), $threes() ); }, "/^(000000)*$/" ),
-			array( function() use ( $even, $odd ) { return FormalTheory_FiniteAutomata::intersection( $even(), FormalTheory_FiniteAutomata::union( $even(), $odd() ) ); }, "/^(00)*$/" ),
+			array( function() use ( $even, $threes ) { return FormalTheory_FiniteAutomata::intersection( $even(), $threes() ); }, "^(000000)*$" ),
+			array( function() use ( $even, $odd ) { return FormalTheory_FiniteAutomata::intersection( $even(), FormalTheory_FiniteAutomata::union( $even(), $odd() ) ); }, "^(00)*$" ),
 		);
 	}
 	
@@ -80,7 +80,7 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 		if( $compare ) {
 			$this->assertTrue( $fa->validSolutionExists() );
 			foreach( $test_numbers as $test_number ) {
-				$this->assertSame( (bool)preg_match( $compare, $test_number ), $fa->isMatch( str_split( $test_number ) ), $test_number );
+				$this->assertSame( (bool)preg_match( "/$compare/", $test_number ), $fa->isMatch( str_split( $test_number ) ), $test_number );
 			}
 		} else {
 			$this->assertFalse( $fa->validSolutionExists() );
