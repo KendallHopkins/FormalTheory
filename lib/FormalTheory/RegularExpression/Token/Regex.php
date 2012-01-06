@@ -45,7 +45,7 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 			if( $token instanceof FormalTheory_RegularExpression_Token_Special ) {
 				throw new RuntimeException( "unexpected special found in middle of regex" );
 			}
-			$matches = FormalTheory_RegularExpression_Utility::crossProductStrinArrays( $matches, $token->getMatches() );
+			$matches = FormalTheory_RegularExpression_Utility::crossProductStringArrays( $matches, $token->getMatches() );
 		}
 		return $matches;
 	}

@@ -54,7 +54,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 			if( $i >= $this->_first_number ) {
 				$output = array_merge( $output, $current_repeat_matches );
 			}
-			$current_repeat_matches = FormalTheory_RegularExpression_Utility::crossProductStrinArrays( $current_repeat_matches, $token_matches );
+			$current_repeat_matches = FormalTheory_RegularExpression_Utility::crossProductStringArrays( $current_repeat_matches, $token_matches );
 		}
 		$output = array_merge( $output, $current_repeat_matches );
 		return $output;

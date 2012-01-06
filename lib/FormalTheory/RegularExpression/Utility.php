@@ -3,7 +3,7 @@
 class FormalTheory_RegularExpression_Utility
 {
 	
-	static function crossProductStrinArrays( $string_array1, $string_array2 )
+	static function crossProductStringArrays( $string_array1, $string_array2 )
 	{
 		$output = array();
 		foreach( $string_array1 as $string1 ) {
