@@ -10,6 +10,8 @@ class FormalTheory_FiniteAutomata
 	const WALK_SKIP = "skip";
 	const WALK_EXIT = "exit";
 	
+	const LAMBDA_TRANSITION = "λ";
+	
 	private $_alphabet = array();
 	private $_states = array();
 	private $_start_state = NULL;
@@ -82,7 +84,7 @@ class FormalTheory_FiniteAutomata
 			if( $transition_lookup_array ) {
 				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
 					foreach( $next_states as $next_state ) {
-						$output .= $symbol_lookup[spl_object_hash( $state )]." -> ".($transition_symbol === "" ? "λ" : $transition_symbol)." -> ".$symbol_lookup[spl_object_hash( $next_state )].PHP_EOL;
+						$output .= $symbol_lookup[spl_object_hash( $state )]." -> ".($transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol)." -> ".$symbol_lookup[spl_object_hash( $next_state )].PHP_EOL;
 					}
 				}
 			} else {
