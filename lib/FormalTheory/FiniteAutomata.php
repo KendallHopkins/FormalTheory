@@ -6,6 +6,9 @@ class FormalTheory_FiniteAutomata
 	const WALK_TYPE_BFS = "bfs";
 	const WALK_TYPE_DFS = "dfs";
 	
+	const WALK_DIRECTION_DOWN = "down";
+	const WALK_DIRECTION_UP = "up";
+	
 	const WALK_TRAVERSE = "traverse";
 	const WALK_SKIP = "skip";
 	const WALK_EXIT = "exit";
@@ -103,18 +106,10 @@ class FormalTheory_FiniteAutomata
 		return $output;
 	}
 	
-	private function walkWithClosure( Closure $closure, $type, $init_data = NULL )
-	{
-		if( ! $this->getStartState() ) {
-			throw new Exception( "no start state" );
-		}
-		$this->getStartState()->walkWithClosure( $closure, $type, $init_data, TRUE );
-	}
-	
 	function isMatch( $symbol_array )
 	{
 		$is_match = FALSE;
-		$this->walkWithClosure( function( $transition_symbol, $current_state, &$data ) use ( $symbol_array, &$is_match ) {
+		$this->getStartState()->walkWithClosure( function( $transition_symbol, $current_state, &$data ) use ( $symbol_array, &$is_match ) {
 			if( is_null( $data ) ) {
 				$data = array_reverse( $symbol_array );
 			}
@@ -129,24 +124,43 @@ class FormalTheory_FiniteAutomata
 				return FormalTheory_FiniteAutomata::WALK_SKIP;
 			}
 			return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-		}, self::WALK_TYPE_DFS );
+		}, self::WALK_TYPE_DFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
 		return $is_match;
 	}
 	
-	function trimOrphanStates()
+	function removeDeadStates()
 	{
-		$visited_states = new SplObjectStorage();
+		$down_visited_states = new SplObjectStorage();
 		
-		$this->walkWithClosure( function( $transition_symbol, $next_state ) use ( $visited_states ) {
-			if( $visited_states->contains( $next_state ) ) {
-				return FormalTheory_FiniteAutomata::WALK_SKIP;
+		$get_walk_closure = function( $visited_states ) {
+			return function( $transition_symbol, $next_state ) use ( $visited_states ) {
+				if( $visited_states->contains( $next_state ) ) {
+					return FormalTheory_FiniteAutomata::WALK_SKIP;
+				}
+				$visited_states->attach( $next_state );
+				return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
+			};
+		};
+		
+		$this->getStartState()->walkWithClosure( $get_walk_closure( $down_visited_states ), self::WALK_TYPE_BFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
+		
+		$up_visited_states = new SplObjectStorage();
+		$up_walk_closure = $get_walk_closure( $up_visited_states );
+		array_map( function( $final_state ) use ( $up_walk_closure ) {
+			$final_state->walkWithClosure( $up_walk_closure, FormalTheory_FiniteAutomata::WALK_TYPE_BFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_UP, NULL, TRUE );
+		}, array_filter( $this->_states, function( $state ) { return $state->getIsFinal(); } ) );
+		
+		$visited_states = new SplObjectStorage();
+		foreach( $down_visited_states as $state ) {
+			if( $up_visited_states->contains( $state ) ) {
+				$visited_states->attach( $state );
 			}
-			$visited_states->attach( $next_state );
-			return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-		}, self::WALK_TYPE_BFS );
+		}
+		$visited_states->attach( $this->getStartState() );
 		
 		foreach( $this->_states as $key => $state ) {
 			if( ! $visited_states->contains( $state ) ) {
+				$this->_states[$key]->unlink();
 				unset( $this->_states[$key] );
 			}
 		}
@@ -180,6 +194,7 @@ class FormalTheory_FiniteAutomata
 							$ref_state->addTransition( (string)$transition_symbol, $replacement_state );
 						}
 					}
+					$replaced_state->unlink();
 					unset( $this->_states[$replaced_state_hash] );
 				}
 				$start_state_hash = spl_object_hash( $this->getStartState() );
@@ -217,7 +232,7 @@ class FormalTheory_FiniteAutomata
 		$valid_solution_exists = FALSE;
 		$visited_states = new SplObjectStorage();
 		
-		$this->walkWithClosure( function( $transition_symbol, $next_state ) use ( $visited_states, &$valid_solution_exists ) {
+		$this->getStartState()->walkWithClosure( function( $transition_symbol, $next_state ) use ( $visited_states, &$valid_solution_exists ) {
 			if( $next_state->getIsFinal() ) {
 				$valid_solution_exists = TRUE;
 				return FormalTheory_FiniteAutomata::WALK_EXIT;
@@ -227,7 +242,7 @@ class FormalTheory_FiniteAutomata
 			}
 			$visited_states->attach( $next_state );
 			return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-		}, self::WALK_TYPE_BFS );
+		}, self::WALK_TYPE_BFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
 		
 		return $valid_solution_exists;
 	}
@@ -279,7 +294,7 @@ class FormalTheory_FiniteAutomata
 				}
 				$reachable_without_transition[spl_object_hash( $next_state )] = $next_state;
 				return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-			}, FormalTheory_FiniteAutomata::WALK_TYPE_BFS );
+			}, FormalTheory_FiniteAutomata::WALK_TYPE_BFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_DOWN );
 			return $reachable_without_transition;
 		}, $finite_automata->_states );
 		

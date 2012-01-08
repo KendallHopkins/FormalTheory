@@ -43,7 +43,7 @@ abstract class FormalTheory_RegularExpression_Token
 		
 		$fa_closure = $this->getFiniteAutomataClosure();
 		$fa_closure( $fa, $start_states, $end_states );
-		$fa->trimOrphanStates();
+		$fa->removeDeadStates();
 		
 		return $fa;
 	}

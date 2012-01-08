@@ -66,6 +66,20 @@ class FormalTheory_FiniteAutomata_State
 		}
 	}
 	
+	function unlink()
+	{
+		foreach( $this->_transition_lookup_array as $transition_symbol => $next_states ) {
+			foreach( $next_states as $next_state ) {
+				$this->deleteTransition( (string)$transition_symbol, $next_state );
+			}
+		}
+		foreach( $this->_transition_ref_array as $transition_symbol => $prev_states ) {
+			foreach( $prev_states as $prev_state ) {
+				$prev_state->deleteTransition( (string)$transition_symbol, $this );
+			}
+		}
+	}
+	
 	function getTransitionLookupArray()
 	{
 		return $this->_transition_lookup_array;
@@ -94,15 +108,20 @@ class FormalTheory_FiniteAutomata_State
 		return TRUE;
 	}
 	
-	function walkWithClosure( Closure $closure, $type, $init_data = NULL, $include_self = FALSE )
+	function walkWithClosure( Closure $closure, $type, $direction, $init_data = NULL, $include_self = FALSE )
 	{
 		$action_map = array(
 			FormalTheory_FiniteAutomata::WALK_TYPE_BFS => "shift",
 			FormalTheory_FiniteAutomata::WALK_TYPE_DFS => "pop",
 		);
+		$function_map = array(
+			FormalTheory_FiniteAutomata::WALK_DIRECTION_DOWN => "getTransitionLookupArray",
+			FormalTheory_FiniteAutomata::WALK_DIRECTION_UP => "getTransitionRefArray",
+		);
 		$states = new SplDoublyLinkedList();
 		
 		$walk_action = $action_map[$type];
+		$walk_function = $function_map[$direction];
 		
 		$transition_symbol = "";
 		$current_state = $this;
@@ -116,7 +135,7 @@ class FormalTheory_FiniteAutomata_State
 			}
 			switch( $walk_type ) {
 				case FormalTheory_FiniteAutomata::WALK_TRAVERSE:
-					foreach( $current_state->getTransitionLookupArray() as $transition_symbol => $next_states ) {
+					foreach( $current_state->$walk_function() as $transition_symbol => $next_states ) {
 						foreach( $next_states as $next_state ) {
 							$states->push( array( (string)$transition_symbol, $next_state, $data ) );
 						}
