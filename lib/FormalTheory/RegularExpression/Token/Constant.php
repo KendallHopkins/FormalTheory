@@ -32,7 +32,8 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 	{
 		$string = $this->_string;
 		return function( $fa, $start_states, $end_states ) use ( $string ) {
-			$start_states[1]->addTransition( $string, $end_states[1] );
+			$start_states[1]->addTransition( $string, $end_states[2] );
+			$start_states[2]->addTransition( $string, $end_states[2] );
 		};
 	}
 	

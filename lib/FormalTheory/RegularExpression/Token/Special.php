@@ -53,10 +53,12 @@ class FormalTheory_RegularExpression_Token_Special extends FormalTheory_RegularE
 			switch( $special ) {
 				case FormalTheory_RegularExpression_Token_Special::BOS:
 					$start_states[0]->addTransition( "", $end_states[1] );
+					$start_states[1]->addTransition( "", $end_states[1] );
 					break;
 				case FormalTheory_RegularExpression_Token_Special::EOS:
-					$start_states[1]->addTransition( "", $end_states[2] );
-					$start_states[2]->addTransition( "", $end_states[2] );
+					$start_states[1]->addTransition( "", $end_states[3] );
+					$start_states[2]->addTransition( "", $end_states[3] );
+					$start_states[3]->addTransition( "", $end_states[3] );
 					break;
 				default: throw new Exception( "should be unreachable" );
 			}

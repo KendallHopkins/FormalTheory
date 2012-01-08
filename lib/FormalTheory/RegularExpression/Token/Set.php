@@ -41,7 +41,8 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 		$char_array = $this->charArray();
 		return function( $fa, $start_states, $end_states ) use ( $char_array ) {
 			foreach( $char_array as $char ) {
-				$start_states[1]->addTransition( $char, $end_states[1] );
+				$start_states[1]->addTransition( $char, $end_states[2] );
+				$start_states[2]->addTransition( $char, $end_states[2] );
 			}
 		};
 	}

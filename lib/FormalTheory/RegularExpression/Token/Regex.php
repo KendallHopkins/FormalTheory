@@ -45,10 +45,11 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 				$start_states[0]->addTransition( "", $end_states[0] );
 				$start_states[1]->addTransition( "", $end_states[1] );
 				$start_states[2]->addTransition( "", $end_states[2] );
+				$start_states[3]->addTransition( "", $end_states[3] );
 			} else {
 				$states = array( $start_states );
 				for( $i = 0; $i < $token_count - 1; $i++ ) {
-					$states[] = $fa->createStates( 3 );
+					$states[] = $fa->createStates( 4 );
 				}
 				$states[] = $end_states;
 				for( $i = 0; $i < $token_count; $i++ ) {

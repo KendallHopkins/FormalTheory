@@ -82,7 +82,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 			$current_states = $start_states;
 			$is_finite = ! is_null( $second_number );
 			for( $i = 0; $i < $first_number; $i++ ) {
-				$next_states = $fa->createStates( 3 );
+				$next_states = $fa->createStates( 4 );
 				$fa_closure( $fa, $current_states, $next_states );
 				$current_states = $next_states;
 			}
@@ -91,8 +91,9 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 					$current_states[0]->addTransition( "", $end_states[0] );
 					$current_states[1]->addTransition( "", $end_states[1] );
 					$current_states[2]->addTransition( "", $end_states[2] );
+					$current_states[3]->addTransition( "", $end_states[3] );
 					if( $i < $second_number ) {
-						$next_states = $fa->createStates( 3 );
+						$next_states = $fa->createStates( 4 );
 						$fa_closure( $fa, $current_states, $next_states );
 						$current_states = $next_states;
 					}
@@ -102,6 +103,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 				$current_states[0]->addTransition( "", $end_states[0] );
 				$current_states[1]->addTransition( "", $end_states[1] );
 				$current_states[2]->addTransition( "", $end_states[2] );
+				$current_states[3]->addTransition( "", $end_states[3] );
 			}
 		};
 	}
