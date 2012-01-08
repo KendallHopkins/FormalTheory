@@ -332,7 +332,7 @@ class FormalTheory_FiniteAutomata
 		$states_to_process = array();
 		$lookup_array = array();
 		$get_meta_state = function( array $states ) use ( &$lookup_array, &$states_to_process, $fa ) {
-			$state_hash_array = array_map( "spl_object_hash", $states );
+			$state_hash_array = array_unique( array_map( "spl_object_hash", $states ) );
 			sort( $state_hash_array );
 			$states_hash = serialize( $state_hash_array );
 			if( ! array_key_exists( $states_hash, $lookup_array ) ) {
