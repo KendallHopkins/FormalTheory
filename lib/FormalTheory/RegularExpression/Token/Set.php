@@ -39,9 +39,9 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	function getFiniteAutomataClosure()
 	{
 		$char_array = $this->charArray();
-		return function( $fa, $start_state, $end_state ) use ( $char_array ) {
+		return function( $fa, $start_states, $end_states ) use ( $char_array ) {
 			foreach( $char_array as $char ) {
-				$start_state->addTransition( $char, $end_state );
+				$start_states[1]->addTransition( $char, $end_states[1] );
 			}
 		};
 	}

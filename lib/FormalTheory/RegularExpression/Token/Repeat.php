@@ -77,27 +77,31 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 		$token = $this->_token;
 		$first_number = $this->_first_number;
 		$second_number = $this->_second_number;
-		return function( $fa, $start_state, $end_state ) use ( $token, $first_number, $second_number ) {
+		return function( $fa, $start_states, $end_states ) use ( $token, $first_number, $second_number ) {
 			$fa_closure = $token->getFiniteAutomataClosure();
-			$current_state = $start_state;
+			$current_states = $start_states;
 			$is_finite = ! is_null( $second_number );
 			for( $i = 0; $i < $first_number; $i++ ) {
-				$next_state = $fa->createState();
-				$fa_closure( $fa, $current_state, $next_state );
-				$current_state = $next_state;
+				$next_states = $fa->createStates( 3 );
+				$fa_closure( $fa, $current_states, $next_states );
+				$current_states = $next_states;
 			}
 			if( $is_finite ) {
 				for( ; $i < $second_number + 1; $i++ ) {
-					$current_state->addTransition( "", $end_state );
+					$current_states[0]->addTransition( "", $end_states[0] );
+					$current_states[1]->addTransition( "", $end_states[1] );
+					$current_states[2]->addTransition( "", $end_states[2] );
 					if( $i < $second_number ) {
-						$next_state = $fa->createState();
-						$fa_closure( $fa, $current_state, $next_state );
-						$current_state = $next_state;
+						$next_states = $fa->createStates( 3 );
+						$fa_closure( $fa, $current_states, $next_states );
+						$current_states = $next_states;
 					}
 				}
 			} else {
-				$fa_closure( $fa, $current_state, $current_state );
-				$current_state->addTransition( "", $end_state );
+				$fa_closure( $fa, $current_states, $current_states );
+				$current_states[0]->addTransition( "", $end_states[0] );
+				$current_states[1]->addTransition( "", $end_states[1] );
+				$current_states[2]->addTransition( "", $end_states[2] );
 			}
 		};
 	}

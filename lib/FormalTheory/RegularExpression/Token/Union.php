@@ -30,10 +30,10 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 	function getFiniteAutomataClosure()
 	{
 		$regex_array = $this->_regex_array;
-		return function( $fa, $start_state, $end_state ) use ( $regex_array ) {
+		return function( $fa, $start_states, $end_states ) use ( $regex_array ) {
 			foreach( $regex_array as $regex ) {
 				$fa_closure = $regex->getFiniteAutomataClosure();
-				$fa_closure( $fa, $start_state, $end_state );
+				$fa_closure( $fa, $start_states, $end_states );
 			}
 		};
 	}

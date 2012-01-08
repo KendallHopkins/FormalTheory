@@ -27,6 +27,11 @@ class FormalTheory_RegularExpression_Tests_DoesIntersectTest extends PHPUnit_Fra
 			array( '1$0', '^.*$', FALSE ),
 			array( '1^0', '', FALSE ),
 			array( '1$0', '', FALSE ),
+			array( '^$', '', TRUE ),
+			array( '^$', '^', TRUE ),
+			array( '^$', '$', TRUE ),
+			array( '^$', '^^$', TRUE ),
+			array( '^$', '^$$', TRUE ),
 		);
 	}
 	

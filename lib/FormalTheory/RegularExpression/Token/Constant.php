@@ -31,8 +31,8 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 	function getFiniteAutomataClosure()
 	{
 		$string = $this->_string;
-		return function( $fa, $start_state, $end_state ) use ( $string ) {
-			$start_state->addTransition( $string, $end_state );
+		return function( $fa, $start_states, $end_states ) use ( $string ) {
+			$start_states[1]->addTransition( $string, $end_states[1] );
 		};
 	}
 	
