@@ -142,12 +142,12 @@ class FormalTheory_FiniteAutomata
 			};
 		};
 		
-		$this->getStartState()->walkWithClosure( $get_walk_closure( $down_visited_states ), self::WALK_TYPE_BFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
+		$this->getStartState()->walkWithClosure( $get_walk_closure( $down_visited_states ), self::WALK_TYPE_DFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
 		
 		$up_visited_states = new SplObjectStorage();
 		$up_walk_closure = $get_walk_closure( $up_visited_states );
 		array_map( function( $final_state ) use ( $up_walk_closure ) {
-			$final_state->walkWithClosure( $up_walk_closure, FormalTheory_FiniteAutomata::WALK_TYPE_BFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_UP, NULL, TRUE );
+			$final_state->walkWithClosure( $up_walk_closure, FormalTheory_FiniteAutomata::WALK_TYPE_DFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_UP, NULL, TRUE );
 		}, array_filter( $this->_states, function( $state ) { return $state->getIsFinal(); } ) );
 		
 		$visited_states = new SplObjectStorage();
@@ -293,7 +293,7 @@ class FormalTheory_FiniteAutomata
 				}
 				$reachable_without_transition[spl_object_hash( $next_state )] = $next_state;
 				return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-			}, FormalTheory_FiniteAutomata::WALK_TYPE_BFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_DOWN );
+			}, FormalTheory_FiniteAutomata::WALK_TYPE_DFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_DOWN );
 			return $reachable_without_transition;
 		}, $finite_automata->_states );
 		

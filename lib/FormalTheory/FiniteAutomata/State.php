@@ -3,6 +3,7 @@
 class FormalTheory_FiniteAutomata_State
 {
 	
+	private $_object_hash;
 	private $_finite_automata;
 	private $_is_final = FALSE;
 	private $_transition_lookup_array = array();
@@ -10,6 +11,7 @@ class FormalTheory_FiniteAutomata_State
 	
 	function __construct( FormalTheory_FiniteAutomata $finite_automata )
 	{
+		$this->_object_hash = spl_object_hash( $this );
 		$this->_finite_automata = $finite_automata;
 	}
 	
@@ -30,7 +32,7 @@ class FormalTheory_FiniteAutomata_State
 	
 	function hasTransition( $symbol, self $next_state )
 	{
-		return array_key_exists( $symbol, $this->_transition_lookup_array ) && array_key_exists( spl_object_hash($next_state), $this->_transition_lookup_array[$symbol] );
+		return array_key_exists( $symbol, $this->_transition_lookup_array ) && array_key_exists( $next_state->_object_hash, $this->_transition_lookup_array[$symbol] );
 	}
 	
 	function addTransition( $symbol, self $next_state )
@@ -44,11 +46,11 @@ class FormalTheory_FiniteAutomata_State
 		if( $symbol !== "" && ! in_array( $symbol, $this->_finite_automata->getAlphabet(), TRUE ) ) {
 			throw new Exception( "symbol isn't in fa's alphabet" );
 		}
-		if( ! in_array( $next_state, $this->_finite_automata->getStates(), TRUE ) ) {
+		if( ! array_key_exists( $next_state->_object_hash, $this->_finite_automata->getStates() ) ) {
 			throw new Exception( "state isn't in fa" );
 		}
-		$this->_transition_lookup_array[$symbol][spl_object_hash($next_state)] = $next_state;
-		$next_state->_transition_ref_array[$symbol][spl_object_hash($this)] = $this;
+		$this->_transition_lookup_array[$symbol][$next_state->_object_hash] = $next_state;
+		$next_state->_transition_ref_array[$symbol][$this->_object_hash] = $this;
 	}
 	
 	function deleteTransition( $symbol, self $next_state )
@@ -56,11 +58,11 @@ class FormalTheory_FiniteAutomata_State
 		if( ! $this->hasTransition( $symbol, $next_state ) ) {
 			throw new Exception( "transition doesn't exist" );
 		}
-		unset( $this->_transition_lookup_array[$symbol][spl_object_hash($next_state)] );
+		unset( $this->_transition_lookup_array[$symbol][$next_state->_object_hash] );
 		if( ! $this->_transition_lookup_array[$symbol] ) {
 			unset( $this->_transition_lookup_array[$symbol] );
 		}
-		unset( $next_state->_transition_ref_array[$symbol][spl_object_hash($this)] );
+		unset( $next_state->_transition_ref_array[$symbol][$this->_object_hash] );
 		if( ! $next_state->_transition_ref_array[$symbol] ) {
 			unset( $next_state->_transition_ref_array[$symbol] );
 		}
