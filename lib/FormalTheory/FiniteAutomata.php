@@ -190,7 +190,6 @@ class FormalTheory_FiniteAutomata
 					$replaced_state = $this->_states[$replaced_state_hash];
 					foreach( $replaced_state->getTransitionRefArray() as $transition_symbol => $ref_states ) {
 						foreach( $ref_states as $ref_state ) {
-							$ref_state->deleteTransition( (string)$transition_symbol, $replaced_state );
 							$ref_state->addTransition( (string)$transition_symbol, $replacement_state );
 						}
 					}
