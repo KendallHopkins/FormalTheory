@@ -7,8 +7,26 @@ class FormalTheory_RegularExpression_Tests_LexTest extends PHPUnit_Framework_Tes
 	{
 		return array(
 			array(
+				"",
+				new FormalTheory_RegularExpression_Token_Regex( array(), FALSE )
+			),
+			array(
+				"()",
+				new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Regex( array() ,TRUE ) ), FALSE )
+			),
+			array(
 				"^$",
 				new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Special( "^" ), new FormalTheory_RegularExpression_Token_Special( "$" ) ), FALSE )
+			),
+			array(
+				"^a|b$",
+				new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Union( array(
+					new FormalTheory_RegularExpression_Token_Regex( array(
+						new FormalTheory_RegularExpression_Token_Special( "^" ), new FormalTheory_RegularExpression_Token_Constant( "a" )
+					), TRUE ), new FormalTheory_RegularExpression_Token_Regex( array(
+						new FormalTheory_RegularExpression_Token_Constant( "b" ), new FormalTheory_RegularExpression_Token_Special( "$" )
+					), TRUE )
+				) ) ), FALSE )
 			),
 			array(
 				"aa|bb",

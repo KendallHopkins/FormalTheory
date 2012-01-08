@@ -31,7 +31,19 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	
 	function getMatches()
 	{
-		return $this->charArray();
+		return array_map( function( $char ) {
+			return FormalTheory_RegularExpression_Match::createFromString( $char );
+		}, $this->charArray() );
+	}
+	
+	function getFiniteAutomataClosure()
+	{
+		$char_array = $this->charArray();
+		return function( $fa, $start_state, $end_state ) use ( $char_array ) {
+			foreach( $char_array as $char ) {
+				$start_state->addTransition( $char, $end_state );
+			}
+		};
 	}
 	
 }

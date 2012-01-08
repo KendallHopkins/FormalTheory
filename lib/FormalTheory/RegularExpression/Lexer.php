@@ -8,6 +8,9 @@ class FormalTheory_RegularExpression_Lexer
 	
 	function lex( $regex_string )
 	{
+		if( $regex_string === "" ) {
+			return new FormalTheory_RegularExpression_Token_Regex( array(), FALSE );
+		}
 		$this->_regex_pieces = str_split( $regex_string );
 		$this->_current_offset = 0;
 		$output = $this->_lex( FALSE, TRUE );

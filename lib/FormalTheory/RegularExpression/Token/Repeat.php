@@ -44,19 +44,31 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 	
 	function getMatches()
 	{
-		if( is_null( $this->_second_number ) ) {
-			throw new RuntimeException( "unbounded repeat found" );
-		}
-		$output = array();
-		$current_repeat_matches = array( "" );
+		$empty_match = FormalTheory_RegularExpression_Match::createFromString( "" );
 		$token_matches = $this->_token->getMatches();
-		for( $i = 0; $i < $this->_second_number; $i++ ) {
-			if( $i >= $this->_first_number ) {
-				$output = array_merge( $output, $current_repeat_matches );
+		$output = array();
+		if( is_null( $this->_second_number ) ) {
+			$converges = 0 === count( array_filter( self::crossProductMatchArray( $token_matches, $token_matches ), function( $match ) use ( $empty_match ) {
+				return ! $match->isEqual( $empty_match );
+			} ) );
+			if( ! $converges ) {
+				throw new RuntimeException( "unbounded repeat found" );
 			}
-			$current_repeat_matches = FormalTheory_RegularExpression_Utility::crossProductStringArrays( $current_repeat_matches, $token_matches );
+			$output = $token_matches;
+			if( $this->_first_number === 0 ) {
+				$output[] = $empty_match;
+			}
+		} else {
+			$current_repeat_matches = array( $empty_match );
+			for( $i = 0; $i < $this->_second_number && $current_repeat_matches; $i++ ) {
+				if( $i >= $this->_first_number ) {
+					$output = array_merge( $output, $current_repeat_matches );
+				}
+				$current_repeat_matches = self::crossProductMatchArray( $current_repeat_matches, $token_matches );
+			}
+			$output = array_merge( $output, $current_repeat_matches );
 		}
-		$output = array_merge( $output, $current_repeat_matches );
+		
 		return $output;
 	}
 	

@@ -16,8 +16,12 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 		);
 		return array(
 			array( "^ab$", array( "ab" ) ),
-			array( "^a|b$", array( "a", "b" ) ),
 			array( "^(ab)$", array( "ab" ) ),
+			array( "(^ab$)", array( "ab" ) ),
+			array( "(^1)+1$", array( "11" ) ),
+			array( "^1()*$", array( "1" ) ),
+			array( "^1(|)*$", array( "1" ) ),
+			array( "^1(2$|$)", array( "12", "1" ) ),
 			array( "^(ab|ba)$", array( "ab", "ba" ) ),
 			array( "^(ab|(b|c)a)$", array( "ab", "ba", "ca" ) ),
 			array( "^(ab|ba){0,2}$", array( "", "ab", "ba", "abab", "abba", "baab", "baba" ) ),
@@ -52,7 +56,10 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 			array( '^{2, 2}$', array( "{2, 2}" ) ),
 			array( '^{2,{2}}$', array( "{2,,}" ) ),
 			array( '^\\{2}$', array( "{2}" ) ),
-			array( '^\\\\{2}$', array( "\\\\" ) )
+			array( '^\\\\{2}$', array( "\\\\" ) ),
+			array( "^^$", array( "" ) ),
+			array( "^$$", array( "" ) ),
+			array( "^$ ", array() ),
 		);
 	}
 	
@@ -64,6 +71,7 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 	{
 		$lexer = new FormalTheory_RegularExpression_Lexer();
 		$actualy_matches_array = $lexer->lex( $regex_string )->getMatches();
+		
 		$extra = array_diff( $actualy_matches_array, $expected_matches_array );
 		$missing = array_diff( $expected_matches_array, $actualy_matches_array );
 		$this->assertSame( array(), $extra, "extra matches" );
@@ -79,13 +87,15 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 			array( "", "RuntimeException", "regex doesn't start with a BOS token" ),
 			array( "$", "RuntimeException", "regex doesn't start with a BOS token" ),
 			array( "^", "RuntimeException", "regex doesn't end with a EOS token" ),
+			array( "^a|b$", "RuntimeException", "regex doesn't end with a EOS token" ),
+			array( "b$|^a", "RuntimeException", "regex doesn't start with a BOS token" ),
+			array( "(^1)*1$", "RuntimeException", "regex doesn't start with a BOS token" ),
+			array( "(^1)+1", "RuntimeException", "regex doesn't end with a EOS token" ),
+			array( "^1(2|$)", "RuntimeException", "regex doesn't end with a EOS token" ),
 			array( "^0+$", "RuntimeException", "unbounded repeat found" ),
 			array( "^0{1,}$", "RuntimeException", "unbounded repeat found" ),
 			array( "^0*$", "RuntimeException", "unbounded repeat found" ),
 			array( "^0{0,}$", "RuntimeException", "unbounded repeat found" ),
-			array( "^$ ", "RuntimeException", "regex doesn't end with a EOS token" ),
-			array( "^^$", "RuntimeException", "unexpected special found in middle of regex" ),
-			array( "^$$", "RuntimeException", "unexpected special found in middle of regex" )
 		);
 	}
 	

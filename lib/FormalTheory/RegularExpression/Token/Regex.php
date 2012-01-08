@@ -22,37 +22,23 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 		}, $this->_token_array ) );
 	}
 	
-	function getTokens()
-	{
-		$temp_token_array = $this->_token_array;
-		if( ! $this->_is_sub_regex ) {
-			$first_token = array_shift( $temp_token_array );
-			$last_token = array_pop( $temp_token_array );
-			if( ! $first_token instanceof FormalTheory_RegularExpression_Token_Special || ! $first_token->isBOS() ) {
-				throw new RuntimeException( "regex doesn't start with a BOS token" );
-			}
-			if( ! $last_token instanceof FormalTheory_RegularExpression_Token_Special || ! $last_token->isEOS() ) {
-				throw new RuntimeException( "regex doesn't end with a EOS token" );
-			}
-		}
-		return $temp_token_array;
-	}
-	
 	function getMatches()
 	{
-		$matches = array( "" );
-		foreach( $this->getTokens() as $token ) {
-			if( $token instanceof FormalTheory_RegularExpression_Token_Special ) {
-				throw new RuntimeException( "unexpected special found in middle of regex" );
-			}
-			$matches = FormalTheory_RegularExpression_Utility::crossProductStringArrays( $matches, $token->getMatches() );
+		$matches = array( FormalTheory_RegularExpression_Match::createFromString( "" ) );
+		foreach( $this->_token_array as $token ) {
+			$matches = self::crossProductMatchArray( $matches, $token->getMatches() );
+		}
+		if( ! $this->_is_sub_regex ) {
+			$matches = array_map( function( $match ) {
+				return $match->getMatch();
+			}, $matches );
 		}
 		return $matches;
 	}
 	
 	function getFiniteAutomataClosure()
 	{
-		$tokens = $this->getTokens();
+		$tokens = $this->_token_array;
 		return function( $fa, $start_state, $end_state ) use ( $tokens ) {
 			$token_count = count( $tokens );
 			$states = $token_count > 1 ? array_merge( array( $start_state ), $fa->createStates( $token_count - 1 ), array( $end_state ) ) : array( $start_state, $end_state );
