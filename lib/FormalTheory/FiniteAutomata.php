@@ -26,6 +26,9 @@ class FormalTheory_FiniteAutomata
 	
 	function setAlphabet( array $alphabet )
 	{
+		if( $this->_states ) {
+			throw new Exception( "alphabet can't be changed once states are added" );
+		}
 		$this->_alphabet = $alphabet;
 	}
 	
