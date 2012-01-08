@@ -24,8 +24,7 @@ abstract class FormalTheory_RegularExpression_Token
 	
 	function getNFA()
 	{
-		$fa = new FormalTheory_FiniteAutomata();
-		$fa->setAlphabet( array_map( "chr", range( 0, 255 ) ) );
+		$fa = new FormalTheory_FiniteAutomata( array_map( "chr", range( 0, 255 ) ) );
 		
 		$start_states = $fa->createStates( 4 );
 		$end_states = $fa->createStates( 4 );

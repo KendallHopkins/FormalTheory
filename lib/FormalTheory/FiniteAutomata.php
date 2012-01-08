@@ -16,20 +16,17 @@ class FormalTheory_FiniteAutomata
 	private $_states = array();
 	private $_start_state = NULL;
 	
+	function __construct( array $alphabet )
+	{
+		$this->_alphabet = $alphabet;
+	}
+	
 	function __clone()
 	{
 		reset( $this->_states );
 		$old_fa = $this->_states ? current( $this->_states )->getFiniteAutomata() : NULL;
 		$this->_states = array();
 		$this->_start_state = $old_fa ? $this->importAutomata( $old_fa ) : NULL;
-	}
-	
-	function setAlphabet( array $alphabet )
-	{
-		if( $this->_states ) {
-			throw new Exception( "alphabet can't be changed once states are added" );
-		}
-		$this->_alphabet = $alphabet;
 	}
 	
 	function getAlphabet()
@@ -272,8 +269,7 @@ class FormalTheory_FiniteAutomata
 		if( $finite_automata->isDeterministic() ) {
 			throw new Exception( "already deterministic" );
 		}
-		$fa = new self();
-		$fa->setAlphabet( $finite_automata->getAlphabet() );
+		$fa = new self( $finite_automata->getAlphabet() );
 		
 		$reachable_without_transition_array = array_map( function( $state ) {
 			$reachable_without_transition = array( $state );
@@ -368,8 +364,7 @@ class FormalTheory_FiniteAutomata
 		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
 			throw new Exception( "different alphabet" );
 		}
-		$fa = new self();
-		$fa->setAlphabet( $finite_automata1->getAlphabet() );
+		$fa = new self( $finite_automata1->getAlphabet() );
 		$top = $fa->createState();
 		$fa->setStartState( $top );
 		$start_state1 = $fa->importAutomata( $finite_automata1 );
@@ -397,8 +392,7 @@ class FormalTheory_FiniteAutomata
 		if( $finite_automata1->getAlphabet() !== $finite_automata2->getAlphabet() ) {
 			throw new Exception( "different alphabet" );
 		}
-		$fa = new self();
-		$fa->setAlphabet( $finite_automata1->getAlphabet() );
+		$fa = new self( $finite_automata1->getAlphabet() );
 		$translation_lookup = array();
 		foreach( $finite_automata1->_states as $state1 ) {
 	 		foreach( $finite_automata2->_states as $state2 ) {

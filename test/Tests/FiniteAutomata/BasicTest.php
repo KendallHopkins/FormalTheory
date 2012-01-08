@@ -6,8 +6,7 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 	function dataProviderForTestBasic()
 	{
 		$even = function() {
-			$fa = new FormalTheory_FiniteAutomata();
-			$fa->setAlphabet( array( "0" ) );
+			$fa = new FormalTheory_FiniteAutomata( array( "0" ) );
 			list( $a, $b ) = $fa->createStates( 2 );
 			$fa->setStartState( $a );
 			$a->setIsFinal( TRUE );
@@ -16,8 +15,7 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 			return $fa;
 		};
 		$odd = function() {
-			$fa = new FormalTheory_FiniteAutomata();
-			$fa->setAlphabet( array( "0" ) );
+			$fa = new FormalTheory_FiniteAutomata( array( "0" ) );
 			list( $a, $b ) = $fa->createStates( 2 );
 			$fa->setStartState( $a );
 			$b->setIsFinal( TRUE );
@@ -26,8 +24,7 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 			return $fa;
 		};
 		$threes = function() {
-			$fa = new FormalTheory_FiniteAutomata();
-			$fa->setAlphabet( array( "0" ) );
+			$fa = new FormalTheory_FiniteAutomata( array( "0" ) );
 			list( $a, $b, $c ) = $fa->createStates( 3 );
 			$fa->setStartState( $a );
 			$a->setIsFinal( TRUE );
@@ -39,8 +36,7 @@ class FormalTheory_Tests_BasicTest extends PHPUnit_Framework_TestCase
 		return array(
 			array(
 				function() {
-					$fa = new FormalTheory_FiniteAutomata();
-					$fa->setAlphabet( array( "0", "1" ) );
+					$fa = new FormalTheory_FiniteAutomata( array( "0", "1" ) );
 					list( $a, $b, $c ) = $fa->createStates( 3 );
 					$fa->setStartState( $a );
 					$c->setIsFinal( TRUE );
