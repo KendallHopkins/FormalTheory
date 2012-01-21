@@ -106,25 +106,27 @@ class FormalTheory_FiniteAutomata
 		return $output;
 	}
 	
-	function isMatch( $symbol_array )
+	function isMatch( array $symbol_array )
 	{
 		$is_match = FALSE;
 		$this->getStartState()->walkWithClosure( function( $transition_symbol, $current_state, &$data ) use ( $symbol_array, &$is_match ) {
-			if( is_null( $data ) ) {
-				$data = array_reverse( $symbol_array );
-			}
-			if( $transition_symbol !== "" && $transition_symbol !== array_pop( $data ) ) {
-				return FormalTheory_FiniteAutomata::WALK_SKIP;
-			}
-			if( ! $data ) {
-				if( $current_state->getIsFinal() ) {
-					$is_match = TRUE;	
-					return FormalTheory_FiniteAutomata::WALK_EXIT;
+			if( $transition_symbol !== "" ) {
+				if( ! $data[1] || $transition_symbol !== array_pop( $data[1] ) ) {
+					return FormalTheory_FiniteAutomata::WALK_SKIP;
 				}
-				return FormalTheory_FiniteAutomata::WALK_SKIP;
+				$data[0] = array();
+			} else {
+				if( in_array( $current_state, $data[0], TRUE ) ) {
+					FormalTheory_FiniteAutomata::WALK_SKIP;
+				}
 			}
+			if( ! $data[1] && $current_state->getIsFinal() ) {
+				$is_match = TRUE;
+				return FormalTheory_FiniteAutomata::WALK_EXIT;
+			}
+			$data[0][] = $current_state;
 			return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-		}, self::WALK_TYPE_DFS, self::WALK_DIRECTION_DOWN, NULL, TRUE );
+		}, self::WALK_TYPE_DFS, self::WALK_DIRECTION_DOWN, array( array(), array_reverse( $symbol_array ) ), TRUE );
 		return $is_match;
 	}
 	
