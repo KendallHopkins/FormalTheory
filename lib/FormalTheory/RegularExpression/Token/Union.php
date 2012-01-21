@@ -32,8 +32,19 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 		$regex_array = $this->_regex_array;
 		return function( $fa, $start_states, $end_states ) use ( $regex_array ) {
 			foreach( $regex_array as $regex ) {
+				$current_start_starts = $fa->createStates( 4 );
+				$current_end_starts = $fa->createStates( 4 );
+				$start_states[0]->addTransition( "", $current_start_starts[0] );
+				$start_states[1]->addTransition( "", $current_start_starts[1] );
+				$start_states[2]->addTransition( "", $current_start_starts[2] );
+				$start_states[3]->addTransition( "", $current_start_starts[3] );
+				$current_end_starts[0]->addTransition( "", $end_states[0] );
+				$current_end_starts[1]->addTransition( "", $end_states[1] );
+				$current_end_starts[2]->addTransition( "", $end_states[2] );
+				$current_end_starts[3]->addTransition( "", $end_states[3] );
+				
 				$fa_closure = $regex->getFiniteAutomataClosure();
-				$fa_closure( $fa, $start_states, $end_states );
+				$fa_closure( $fa, $current_start_starts, $current_end_starts );
 			}
 		};
 	}

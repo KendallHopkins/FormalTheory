@@ -32,6 +32,7 @@ class FormalTheory_RegularExpression_Tests_DoesIntersectTest extends PHPUnit_Fra
 			array( '^$', '$', TRUE ),
 			array( '^$', '^^$', TRUE ),
 			array( '^$', '^$$', TRUE ),
+			array( '^((bbbbb)*|(bbbbbbb)*)$', '^((b)*|(bb)*)$', TRUE ),
 		);
 	}
 	
