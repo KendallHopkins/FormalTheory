@@ -108,26 +108,26 @@ class FormalTheory_FiniteAutomata
 	
 	function isMatch( array $symbol_array )
 	{
-		$is_match = FALSE;
-		$this->getStartState()->walkWithClosure( function( $transition_symbol, $current_state, &$data ) use ( $symbol_array, &$is_match ) {
-			if( $transition_symbol !== "" ) {
-				if( ! $data[1] || $transition_symbol !== array_pop( $data[1] ) ) {
-					return FormalTheory_FiniteAutomata::WALK_SKIP;
-				}
-				$data[0] = array();
-			} else {
-				if( in_array( $current_state, $data[0], TRUE ) ) {
-					FormalTheory_FiniteAutomata::WALK_SKIP;
+		$stack = array( array( $this->getStartState(), array(), array_reverse( $symbol_array ) ) );
+		do {
+			list( $current_state, $recently_visited_states, $remaining_symbols ) = array_pop( $stack );
+			$recently_visited_states[spl_object_hash( $current_state )] = $current_state;
+			foreach( $current_state->transitions( "" ) as $next_state_hash => $next_state ) {
+				if( ! array_key_exists( $next_state_hash, $recently_visited_states ) ) {
+					array_push( $stack, array( $next_state, $recently_visited_states, $remaining_symbols ) );
 				}
 			}
-			if( ! $data[1] && $current_state->getIsFinal() ) {
-				$is_match = TRUE;
-				return FormalTheory_FiniteAutomata::WALK_EXIT;
+			if( $remaining_symbols ) {
+				$next_symbol = array_pop( $remaining_symbols );
+				$recently_visited_states = array();
+				foreach( $current_state->transitions( $next_symbol ) as $next_state ) {
+					array_push( $stack, array( $next_state, $recently_visited_states, $remaining_symbols ) );
+				}
+			} else if( $current_state->getIsFinal() ) {
+				return TRUE;
 			}
-			$data[0][] = $current_state;
-			return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
-		}, self::WALK_TYPE_DFS, self::WALK_DIRECTION_DOWN, array( array(), array_reverse( $symbol_array ) ), TRUE );
-		return $is_match;
+		} while( $stack );
+		return FALSE;
 	}
 	
 	function compileMatcher()
