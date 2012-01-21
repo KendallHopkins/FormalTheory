@@ -130,6 +130,37 @@ class FormalTheory_FiniteAutomata
 		return $is_match;
 	}
 	
+	function compileMatcher()
+	{
+		if( ! $this->isDeterministic() ) {
+			throw new Exception( "must be deterministic" );
+		}
+		$lookup_arrays = array_map( function( $state ) {
+			return array(
+				$state->getIsFinal(),
+				array_map( function( $states ) {
+					return key( $states );
+				}, $state->getTransitionLookupArray() )
+			);
+		}, $this->_states );
+		
+		foreach( $lookup_arrays as $state_hash => &$state_info ) {
+			foreach( $state_info[1] as $transition_symbol => $transition_state_hash ) {
+				$state_info[1][$transition_symbol] = &$lookup_arrays[$transition_state_hash];
+			}
+		}
+		
+		$current_state = $lookup_arrays[spl_object_hash( $this->getStartState() )];
+		
+		return function( array $symbol_array ) use ( $current_state ) {
+			foreach( $symbol_array as $symbol ) {
+				if( ! isset( $current_state[1][$symbol] ) ) return FALSE;
+				$current_state = $current_state[1][$symbol];
+			}
+			return $current_state[0];
+		};
+	}
+	
 	function removeDeadStates()
 	{
 		$down_visited_states = new SplObjectStorage();
