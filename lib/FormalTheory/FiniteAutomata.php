@@ -471,6 +471,108 @@ class FormalTheory_FiniteAutomata
 	 	return $fa;
 	}
 	
+	function getRegex()
+	{
+		$non_regex_symbols = array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 255 ) ) );
+		if( $non_regex_symbols ) {
+			throw new LogicException( "alphabet contain non-regex symbols" );
+		}
+		$empty_table = array_fill_keys( array_merge( array_keys( $this->_states ), array( "final" ) ), array() );
+		$inverse_lookup_array = function( $lookup_array ) use ( $empty_table ) {
+			$table = $empty_table;
+			foreach( $lookup_array as $transition => $states ) {
+				foreach( array_keys( $states ) as $state_hash ) {
+					$table[$state_hash][] = $transition;
+				}
+			}
+			return $table;
+		};
+		$transition_map = array_map( function( $state ) use ( $inverse_lookup_array ) {
+			$to_table = $inverse_lookup_array( $state->getTransitionLookupArray() );
+			$from_table = $inverse_lookup_array( $state->getTransitionRefArray() );
+			$self_table = $to_table[spl_object_hash( $state )];
+			unset( $to_table[spl_object_hash( $state )] );
+			unset( $from_table[spl_object_hash( $state )] );
+			return array( $to_table, $from_table, $self_table );
+		}, $this->_states );
+		
+		$start_state_hash = spl_object_hash( $this->getStartState() );
+		
+		//create new unified final state
+		$transition_map["final"] = array( $empty_table, $empty_table, array() );
+		unset( $transition_map["final"][0]["final"] );
+		unset( $transition_map["final"][1]["final"] );
+		foreach( array_keys( array_filter( $this->_states, function( $state ) { return $state->getIsFinal(); } ) ) as $final_state_hash ) {
+			$transition_map[$final_state_hash][0]["final"][] = "";
+			$transition_map["final"][1][$final_state_hash][] = "";
+		}
+		
+		$build_regex_from_array = function( array $array ) {
+			switch( count( $array ) ) {
+				case 0:	return NULL;
+				case 1: return $array[0];
+				default: return "(".implode( "|", $array ).")";
+			}
+		};
+		
+		$cross_product_strings = function( array $array1, array $array2, $middle ) use ( $build_regex_from_array ) {
+			return array( $build_regex_from_array( $array1 ).$middle.$build_regex_from_array( $array2 ) );
+		};
+		
+		foreach( array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) ) as $state_hash_to_remove ) {
+			foreach( $transition_map[$state_hash_to_remove][0] as $next_state_hash => $next_transitions ) {
+				foreach( $transition_map[$state_hash_to_remove][1] as $prev_state_hash => $prev_transitions ) {
+					if( $next_transitions && $prev_transitions ) {
+						$middle_regex = $build_regex_from_array( $transition_map[$state_hash_to_remove][2] );
+						$new_paths = $cross_product_strings( $prev_transitions, $next_transitions, is_null( $middle_regex ) ? "" : "(".$middle_regex.")*" );
+						if( $next_state_hash === $prev_state_hash ) {
+							$transition_map[$prev_state_hash][2] = array_merge(
+								$transition_map[$prev_state_hash][2],
+								$new_paths
+							);
+						} else {
+							$transition_map[$prev_state_hash][0][$next_state_hash] = array_merge(
+								$transition_map[$prev_state_hash][0][$next_state_hash],
+								$new_paths
+							);
+							$transition_map[$next_state_hash][1][$prev_state_hash] = array_merge(
+								$transition_map[$next_state_hash][1][$prev_state_hash],
+								$new_paths
+							);
+						}
+					}
+				}
+			}
+			unset( $transition_map[$state_hash_to_remove] );
+			foreach( array_keys( $transition_map ) as $state_hash ) {
+				unset( $transition_map[$state_hash][0][$state_hash_to_remove] );
+				unset( $transition_map[$state_hash][1][$state_hash_to_remove] );
+			}
+		}
+		$start_to_start = $build_regex_from_array( $transition_map[$start_state_hash][2] );
+		$finish_to_finsh = $build_regex_from_array( $transition_map["final"][2] );
+		$start_to_finish = $build_regex_from_array( $transition_map[$start_state_hash][0]["final"] );
+		$finish_to_start = $build_regex_from_array( $transition_map["final"][0][$start_state_hash] );
+		
+		if( is_null( $start_to_finish ) ) {
+			throw new LogicException( "DFA has no valid solutions" );
+		}
+		$main_pipe_regex = "";
+		if( ! is_null( $start_to_start ) ) {
+			$main_pipe_regex .= "(".$start_to_start.")*";
+		}
+		$main_pipe_regex .= $start_to_finish;
+		if( ! is_null( $finish_to_finsh ) ) {
+			$main_pipe_regex .= "(".$finish_to_finsh.")*";
+		}
+		$output_regex = "^";
+		if( ! is_null( $start_to_finish ) && ! is_null( $finish_to_start ) ) {
+			$output_regex .= "(".$main_pipe_regex.$finish_to_start.")*";
+		}
+		$output_regex .= $main_pipe_regex."$";
+		return $output_regex;
+	}
+	
 }
 
 ?>
