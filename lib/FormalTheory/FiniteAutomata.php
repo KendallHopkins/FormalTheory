@@ -383,6 +383,7 @@ class FormalTheory_FiniteAutomata
 			}
 			return $lookup_array[$states_hash];
 		};
+		foreach( $finite_automata->_states as $state ) { $get_meta_state( array( $state ) ); }
 		$new_start_state = $get_meta_state( $reachable_without_transition_array[spl_object_hash( $finite_automata->getStartState() )] );
 		$fa->setStartState( $new_start_state );
 		while( $current_states = array_pop( $states_to_process ) ) {
