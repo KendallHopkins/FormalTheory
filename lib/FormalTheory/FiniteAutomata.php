@@ -40,7 +40,7 @@ class FormalTheory_FiniteAutomata
 	function createState()
 	{
 		$state = new FormalTheory_FiniteAutomata_State( $this );
-		return $this->_states[spl_object_hash($state)] = $state;
+		return $this->_states[$state->getHash()] = $state;
 	}
 	
 	function createLoopState()
@@ -85,10 +85,10 @@ class FormalTheory_FiniteAutomata
 	{
 		$i = 1;
 		$symbol_lookup = array();
-		$symbol_lookup[spl_object_hash( $this->_start_state )] = "S".($this->_start_state->getIsFinal() ? "*" : "");
+		$symbol_lookup[$this->_start_state->getHash()] = "S".($this->_start_state->getIsFinal() ? "*" : "");
 		foreach( $this->_states as $state ) {
 			if( $state === $this->_start_state ) continue;
-			$symbol_lookup[spl_object_hash( $state )] = ($i++).($state->getIsFinal() ? "*" : "");
+			$symbol_lookup[$state->getHash()] = ($i++).($state->getIsFinal() ? "*" : "");
 		}
 		$output = "";
 		foreach( $this->_states as $state ) {
@@ -96,11 +96,11 @@ class FormalTheory_FiniteAutomata
 			if( $transition_lookup_array ) {
 				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
 					foreach( $next_states as $next_state ) {
-						$output .= $symbol_lookup[spl_object_hash( $state )]." -> ".($transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol)." -> ".$symbol_lookup[spl_object_hash( $next_state )].PHP_EOL;
+						$output .= $symbol_lookup[$state->getHash()]." -> ".($transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol)." -> ".$symbol_lookup[$next_state->getHash()].PHP_EOL;
 					}
 				}
 			} else {
-				$output .= $symbol_lookup[spl_object_hash( $state )]." (no transitions)".PHP_EOL;
+				$output .= $symbol_lookup[$state->getHash()]." (no transitions)".PHP_EOL;
 			}
 		}
 		return $output;
@@ -114,10 +114,10 @@ class FormalTheory_FiniteAutomata
 		
 		$i = 1;
 		$symbol_lookup = array();
-		$symbol_lookup[spl_object_hash( $this->_start_state )] = "S";
+		$symbol_lookup[$this->_start_state->getHash()] = "S";
 		foreach( $this->_states as $state ) {
 			if( $state === $this->_start_state ) continue;
-			$symbol_lookup[spl_object_hash( $state )] = ($i++);
+			$symbol_lookup[$state->getHash()] = ($i++);
 		}
 		foreach( $symbol_lookup as $hash => $id_string ) {
 			if( $this->_states[$hash]->getIsFinal() ) {
@@ -134,7 +134,7 @@ class FormalTheory_FiniteAutomata
 					foreach( $next_states as $next_state ) {
 						$transition_symbol_string = $transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol;
 						$transition_string .= <<<EOT
-{$symbol_lookup[spl_object_hash( $state )]} -> {$symbol_lookup[spl_object_hash( $next_state )]} [ label = "$transition_symbol_string" ];
+{$symbol_lookup[$state->getHash()]} -> {$symbol_lookup[$next_state->getHash()]} [ label = "$transition_symbol_string" ];
 
 EOT;
 					}
@@ -160,7 +160,7 @@ EOT;
 		$stack = array( array( $this->getStartState(), array(), array_reverse( $symbol_array ) ) );
 		do {
 			list( $current_state, $recently_visited_states, $remaining_symbols ) = array_pop( $stack );
-			$recently_visited_states[spl_object_hash( $current_state )] = $current_state;
+			$recently_visited_states[$current_state->getHash()] = $current_state;
 			foreach( $current_state->transitions( "" ) as $next_state_hash => $next_state ) {
 				if( ! array_key_exists( $next_state_hash, $recently_visited_states ) ) {
 					array_push( $stack, array( $next_state, $recently_visited_states, $remaining_symbols ) );
@@ -199,7 +199,7 @@ EOT;
 			}
 		}
 		
-		$current_state = $lookup_arrays[spl_object_hash( $this->getStartState() )];
+		$current_state = $lookup_arrays[$this->getStartState()->getHash()];
 		
 		return function( array $symbol_array ) use ( $current_state ) {
 			foreach( $symbol_array as $symbol ) {
@@ -278,7 +278,7 @@ EOT;
 					$replaced_state->unlink();
 					unset( $this->_states[$replaced_state_hash] );
 				}
-				$start_state_hash = spl_object_hash( $this->getStartState() );
+				$start_state_hash = $this->getStartState()->getHash();
 				if( array_key_exists( $start_state_hash, $replace_array ) ) {
 					$this->setStartState( $replace_array[$start_state_hash] );
 				}
@@ -337,17 +337,17 @@ EOT;
 		foreach( $finite_automata->_states as $state ) {
 			$new_state = $this->createState();
 			$new_state->setIsFinal( $state->getIsFinal() );
-			$translation_lookup[spl_object_hash( $state )] = $new_state;
+			$translation_lookup[$state->getHash()] = $new_state;
 		}
 		foreach( $finite_automata->_states as $state ) {
-			$new_state = $translation_lookup[spl_object_hash( $state )];
+			$new_state = $translation_lookup[$state->getHash()];
 			foreach( $state->getTransitionLookupArray() as $transition_symbol => $next_states ) {
 				foreach( $next_states as $next_state ) {
-					$new_state->addTransition( (string)$transition_symbol, $translation_lookup[spl_object_hash( $next_state )] );
+					$new_state->addTransition( (string)$transition_symbol, $translation_lookup[$next_state->getHash()] );
 				}
 			}
 		}
-		return $translation_lookup[spl_object_hash( $finite_automata->getStartState() )];
+		return $translation_lookup[$finite_automata->getStartState()->getHash()];
 	}
 	
 	function minimize()
@@ -375,8 +375,8 @@ EOT;
 			}
 		}
 		$get_is_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
-			$state1_hash = spl_object_hash( $state1 );
-			$state2_hash = spl_object_hash( $state2 );
+			$state1_hash = $state1->getHash();
+			$state2_hash = $state2->getHash();
 			if( $state1_hash === $state2_hash ) {
 				throw new RuntimeException( "don't ask if the same state is distinguishable" );
 			}
@@ -385,8 +385,8 @@ EOT;
 				: $distinguishable_array[$state2_hash][$state1_hash];
 		};
 		$mark_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
-			$state1_hash = spl_object_hash( $state1 );
-			$state2_hash = spl_object_hash( $state2 );
+			$state1_hash = $state1->getHash();
+			$state2_hash = $state2->getHash();
 			if( $state1_hash === $state2_hash ) {
 				throw new RuntimeException( "don't ask if the same state is distinguishable" );
 			}
@@ -453,7 +453,7 @@ EOT;
 							$prev_state->addTransition( (string)$transition_symbol, $state1 );
 						}
 					}
-					if( spl_object_hash( $this->getStartState() ) === spl_object_hash( $state2 ) ) {
+					if( $this->getStartState()->getHash() === $state2->getHash() ) {
 						$this->setStartState( $state1 );
 					}
 					$state2->unlink();
@@ -487,7 +487,7 @@ EOT;
 				if( in_array( $next_state, $reachable_without_transition, TRUE ) || $transition_symbol !== "" ) {
 					return FormalTheory_FiniteAutomata::WALK_SKIP;
 				}
-				$reachable_without_transition[spl_object_hash( $next_state )] = $next_state;
+				$reachable_without_transition[$next_state->getHash()] = $next_state;
 				return FormalTheory_FiniteAutomata::WALK_TRAVERSE;
 			}, FormalTheory_FiniteAutomata::WALK_TYPE_DFS, FormalTheory_FiniteAutomata::WALK_DIRECTION_DOWN );
 			return $reachable_without_transition;
@@ -498,7 +498,7 @@ EOT;
 				$transition_lookup_array = $state->getTransitionLookupArray();
 				unset( $transition_lookup_array[""] );
 				return $transition_lookup_array;
-			}, $reachable_without_transition_array[spl_object_hash( $state )] );
+			}, $reachable_without_transition_array[$state->getHash()] );
 			$reachable_by_symbol = array();
 			foreach( $first_level_transition_lookup_arrays as $first_level_transition_lookup_array ) {
 				foreach( $first_level_transition_lookup_array as $transition_symbol => $next_states ) {
@@ -516,7 +516,7 @@ EOT;
 		$calculate_reachable = function( array $states ) use ( $reachable_by_transition_array ) {
 			$merged_reachable_states = array();
 			foreach( $states as $state ) {
-				foreach( $reachable_by_transition_array[spl_object_hash( $state )] as $transition_symbol => $reachable_states ) {
+				foreach( $reachable_by_transition_array[$state->getHash()] as $transition_symbol => $reachable_states ) {
 					$merged_reachable_states[$transition_symbol] = array_key_exists( $transition_symbol, $merged_reachable_states )
 						? array_merge( $merged_reachable_states[$transition_symbol], $reachable_states )
 						: $reachable_states;
@@ -547,7 +547,7 @@ EOT;
 			return $lookup_array[$states_hash];
 		};
 		foreach( $finite_automata->_states as $state ) { $get_meta_state( array( $state ) ); }
-		$new_start_state = $get_meta_state( $reachable_without_transition_array[spl_object_hash( $finite_automata->getStartState() )] );
+		$new_start_state = $get_meta_state( $reachable_without_transition_array[$finite_automata->getStartState()->getHash()] );
 		$fa->setStartState( $new_start_state );
 		while( $current_states = array_pop( $states_to_process ) ) {
 			$current_state = $get_meta_state( $current_states );
@@ -609,25 +609,25 @@ EOT;
 	 		foreach( $finite_automata2->_states as $state2 ) {
 	 			$new_state = $fa->createState();
 				$new_state->setIsFinal( $state1->getIsFinal() && $state2->getIsFinal() );
-				$translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $state2 )] = $new_state;
+				$translation_lookup[$state1->getHash()][$state2->getHash()] = $new_state;
 	 		}
 	 	}
-	 	$fa->setStartState( $translation_lookup[spl_object_hash( $finite_automata1->getStartState() )][spl_object_hash( $finite_automata2->getStartState() )] );
+	 	$fa->setStartState( $translation_lookup[$finite_automata1->getStartState()->getHash()][$finite_automata2->getStartState()->getHash()] );
 	 	foreach( $finite_automata1->_states as $state1 ) {
 	 		foreach( $finite_automata2->_states as $state2 ) {
-				$new_state = $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $state2 )];
+				$new_state = $translation_lookup[$state1->getHash()][$state2->getHash()];
 				foreach( $state1->getTransitionLookupArray() as $transition_symbol => $next_states1 ) {
 					foreach( $state2->transitions( $transition_symbol ) as $next_state2 ) {
 						foreach( $next_states1 as $next_state1 ) {
-							$new_state->addTransition( (string)$transition_symbol, $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $next_state2 )] );
+							$new_state->addTransition( (string)$transition_symbol, $translation_lookup[$next_state1->getHash()][$next_state2->getHash()] );
 						}
 					}
 				}
 				foreach( $state1->transitions( "" ) as $next_state1 ) {
-					$new_state->addTransition( "", $translation_lookup[spl_object_hash( $next_state1 )][spl_object_hash( $state2 )] );
+					$new_state->addTransition( "", $translation_lookup[$next_state1->getHash()][$state2->getHash()] );
 				}
 				foreach( $state2->transitions( "" ) as $next_state2 ) {
-					$new_state->addTransition( "", $translation_lookup[spl_object_hash( $state1 )][spl_object_hash( $next_state2 )] );
+					$new_state->addTransition( "", $translation_lookup[$state1->getHash()][$next_state2->getHash()] );
 				}
 	 		}
 	 	}
@@ -636,8 +636,7 @@ EOT;
 	
 	function getRegex()
 	{
-		$non_regex_symbols = array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 255 ) ) );
-		if( $non_regex_symbols ) {
+		if( array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 255 ) ) ) ) {
 			throw new LogicException( "alphabet contain non-regex symbols" );
 		}
 		$empty_table = array_fill_keys( array_merge( array_keys( $this->_states ), array( "final" ) ), array() );
@@ -653,13 +652,13 @@ EOT;
 		$transition_map = array_map( function( $state ) use ( $inverse_lookup_array ) {
 			$to_table = $inverse_lookup_array( $state->getTransitionLookupArray() );
 			$from_table = $inverse_lookup_array( $state->getTransitionRefArray() );
-			$self_table = $to_table[spl_object_hash( $state )];
-			unset( $to_table[spl_object_hash( $state )] );
-			unset( $from_table[spl_object_hash( $state )] );
+			$self_table = $to_table[$state->getHash()];
+			unset( $to_table[$state->getHash()] );
+			unset( $from_table[$state->getHash()] );
 			return array( $to_table, $from_table, $self_table );
 		}, $this->_states );
 		
-		$start_state_hash = spl_object_hash( $this->getStartState() );
+		$start_state_hash = $this->getStartState()->getHash();
 		
 		//create new unified final state
 		$transition_map["final"] = array( $empty_table, $empty_table, array() );
@@ -682,7 +681,9 @@ EOT;
 			return array( $build_regex_from_array( $array1 ).$middle.$build_regex_from_array( $array2 ) );
 		};
 		
-		foreach( array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) ) as $state_hash_to_remove ) {
+		$test = array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) );
+		shuffle( $test );
+		foreach( $test as $state_hash_to_remove ) {
 			foreach( $transition_map[$state_hash_to_remove][0] as $next_state_hash => $next_transitions ) {
 				foreach( $transition_map[$state_hash_to_remove][1] as $prev_state_hash => $prev_transitions ) {
 					if( $next_transitions && $prev_transitions ) {

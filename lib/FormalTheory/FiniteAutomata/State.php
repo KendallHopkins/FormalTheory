@@ -20,6 +20,11 @@ class FormalTheory_FiniteAutomata_State
 		return $this->_finite_automata;
 	}
 	
+	function getHash()
+	{
+		return $this->_object_hash;
+	}
+	
 	function getIsFinal()
 	{
 		return $this->_is_final;
