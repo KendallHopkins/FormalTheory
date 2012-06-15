@@ -106,6 +106,55 @@ class FormalTheory_FiniteAutomata
 		return $output;
 	}
 	
+	function displayAsDot()
+	{
+		$final_state_string = "";
+		$non_final_state_string = "";
+		$transition_string = "";
+		
+		$i = 1;
+		$symbol_lookup = array();
+		$symbol_lookup[spl_object_hash( $this->_start_state )] = "S";
+		foreach( $this->_states as $state ) {
+			if( $state === $this->_start_state ) continue;
+			$symbol_lookup[spl_object_hash( $state )] = ($i++);
+		}
+		foreach( $symbol_lookup as $hash => $id_string ) {
+			if( $this->_states[$hash]->getIsFinal() ) {
+				$final_state_string .= $id_string." ";
+			} else {
+				$non_final_state_string .= $id_string." ";
+			}
+		}
+		
+		foreach( $this->_states as $state ) {
+			$transition_lookup_array = $state->getTransitionLookupArray();
+			if( $transition_lookup_array ) {
+				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
+					foreach( $next_states as $next_state ) {
+						$transition_symbol_string = $transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol;
+						$transition_string .= <<<EOT
+{$symbol_lookup[spl_object_hash( $state )]} -> {$symbol_lookup[spl_object_hash( $next_state )]} [ label = "$transition_symbol_string" ];
+
+EOT;
+					}
+				}
+			}
+		}
+		$start_type = $this->_start_state->getIsFinal() ? "doublecircle" : "circle";
+		$output = <<<EOT
+digraph finite_state_machine {
+rankdir=LR;
+node [label="S" shape = $start_type]; S;
+node [label=""];
+node [shape = doublecircle]; $final_state_string;
+node [shape = circle]; $non_final_state_string;
+$transition_string
+}
+EOT;
+		return $output;
+	}
+	
 	function isMatch( array $symbol_array )
 	{
 		$stack = array( array( $this->getStartState(), array(), array_reverse( $symbol_array ) ) );
@@ -299,6 +348,120 @@ class FormalTheory_FiniteAutomata
 			}
 		}
 		return $translation_lookup[spl_object_hash( $finite_automata->getStartState() )];
+	}
+	
+	function minimize()
+	{
+		if( ! $this->isDeterministic() ) {
+			throw new Exception( "fa must be deterministic" );
+		}
+		$this->removeDeadStates();
+		$this->addFailureState();
+		$final_states = array_values( array_filter( $this->_states, function( $state ) {
+			return $state->getIsFinal();
+		} ) );
+		$non_final_states = array_values( array_filter( $this->_states, function( $state ) {
+			return ! $state->getIsFinal();
+		} ) );
+		$distinguishable_array = array();
+		$state_hashes = array_keys( $this->_states );
+		for( $i = 1; $i < count( $state_hashes ); $i++ ) {
+			for( $j = 0; $j < $i; $j++ ) {
+				if( $state_hashes[$i] > $state_hashes[$j] ) {
+					$distinguishable_array[$state_hashes[$i]][$state_hashes[$j]] = FALSE;
+				} else {
+					$distinguishable_array[$state_hashes[$j]][$state_hashes[$i]] = FALSE;
+				}
+			}
+		}
+		$get_is_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
+			$state1_hash = spl_object_hash( $state1 );
+			$state2_hash = spl_object_hash( $state2 );
+			if( $state1_hash === $state2_hash ) {
+				throw new RuntimeException( "don't ask if the same state is distinguishable" );
+			}
+			return $state1_hash > $state2_hash
+				? $distinguishable_array[$state1_hash][$state2_hash]
+				: $distinguishable_array[$state2_hash][$state1_hash];
+		};
+		$mark_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
+			$state1_hash = spl_object_hash( $state1 );
+			$state2_hash = spl_object_hash( $state2 );
+			if( $state1_hash === $state2_hash ) {
+				throw new RuntimeException( "don't ask if the same state is distinguishable" );
+			}
+			if( $state1_hash > $state2_hash ) {
+				if( $distinguishable_array[$state1_hash][$state2_hash] ) {
+					throw new RuntimeException( "already marked" );
+				}
+				$distinguishable_array[$state1_hash][$state2_hash] = TRUE;
+			} else {
+				if( $distinguishable_array[$state2_hash][$state1_hash] ) {
+					throw new RuntimeException( "already marked" );
+				}
+				$distinguishable_array[$state2_hash][$state1_hash] = TRUE;
+			}
+		};
+		
+		foreach( $final_states as $final_state ) {
+			foreach( $non_final_states as $non_final_state ) {
+				$mark_distinguishable( $final_state, $non_final_state );
+			}
+		}
+		$pairs = array();
+		for( $i = 1; $i < count( $final_states ); $i++ ) {
+			for( $j = 0; $j < $i; $j++ ) {
+				if( ! $get_is_distinguishable( $final_states[$i], $final_states[$j] ) ) {
+					$pairs[] = array( $final_states[$i], $final_states[$j] );
+				}
+			}
+		}
+		for( $i = 1; $i < count( $non_final_states ); $i++ ) {
+			for( $j = 0; $j < $i; $j++ ) {
+				if( ! $get_is_distinguishable( $non_final_states[$i], $non_final_states[$j] ) ) {
+					$pairs[] = array( $non_final_states[$i], $non_final_states[$j] );
+				}
+			}
+		}
+		do {
+			$did_mark = FALSE;
+			foreach( $pairs as $i => $pair ) {
+				list( $state1, $state2 ) = $pair;
+				foreach( $this->getAlphabet() as $symbol ) {
+					list( $next_state1 ) = array_values( $state1->transitions( $symbol ) );
+					list( $next_state2 ) = array_values( $state2->transitions( $symbol ) );
+					if( $next_state1 !== $next_state2 ) {
+						if( $get_is_distinguishable( $next_state1, $next_state2 ) ) {
+							$mark_distinguishable( $state1, $state2 );
+							unset( $pairs[$i] );
+							$did_mark = TRUE;
+							break 1;
+						}
+					}
+				}
+			}
+		} while( $did_mark );
+		
+		krsort( $distinguishable_array );
+		foreach( $distinguishable_array as $state1_hash => $state2_hashes ) {
+			$state1 = $this->_states[$state1_hash];
+			foreach( $state2_hashes as $state2_hash => $is_distinguishable ) {
+				if( ! $is_distinguishable ) {
+					$state2 = $this->_states[$state2_hash];
+					foreach( $state2->getTransitionRefArray() as $transition_symbol => $prev_states ) {
+						foreach( $prev_states as $prev_state ) {
+							$prev_state->addTransition( (string)$transition_symbol, $state1 );
+						}
+					}
+					if( spl_object_hash( $this->getStartState() ) === spl_object_hash( $state2 ) ) {
+						$this->setStartState( $state1 );
+					}
+					$state2->unlink();
+				}
+			}
+		}
+		
+		$this->removeDeadStates();
 	}
 	
 	function isDeterministic()
