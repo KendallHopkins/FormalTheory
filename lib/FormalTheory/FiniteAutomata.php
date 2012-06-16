@@ -132,7 +132,7 @@ class FormalTheory_FiniteAutomata
 			if( $transition_lookup_array ) {
 				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
 					foreach( $next_states as $next_state ) {
-						$transition_symbol_string = $transition_symbol === "" ? self::LAMBDA_TRANSITION : $transition_symbol;
+						$transition_symbol_string = $transition_symbol === "" ? self::LAMBDA_TRANSITION : str_replace( "\\", "\\\\",  FormalTheory_RegularExpression_Token_Constant::escapeChar( (string)$transition_symbol ) );
 						$transition_string .= <<<EOT
 {$symbol_lookup[$state->getHash()]} -> {$symbol_lookup[$next_state->getHash()]} [ label = "$transition_symbol_string" ];
 
