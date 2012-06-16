@@ -92,38 +92,13 @@ class FormalTheory_RegularExpression_Lexer
 						break;
 				}
 			} else {
-				$number_range = array( "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" );
-				$word_range = array_merge(
-					range( "A", "Z" ), range( "a", "z" ),
-					$number_range, array( "_" )
-				);
 				switch( $current_piece ) {
-					case "w":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( $word_range, TRUE );
+					case "w": case "W": case "d": case "D": case "s": case "S":
+						$tokens[] = FormalTheory_RegularExpression_Token_Set::newFromGroupChar( $current_piece );
 						break;
-					case "W":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( $word_range, FALSE );
-						break;
-					case "d":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( $number_range, TRUE );
-						break;
-					case "D":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( $number_range, FALSE );
-						break;
-					case "s":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f" ), TRUE );
-						break;
-					case "S":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f" ), FALSE );
-						break;
-					case "t":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Constant( "\t" );
-						break;
-					case "r":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Constant( "\r" );
-						break;
-					case "n":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Constant( "\n" );
+					case "t": case "v": case "r": case "n":
+						$lookup = array( "t" => "\t", "v" => "\v", "r" => "\r", "n" => "\n" );
+						$tokens[] = new FormalTheory_RegularExpression_Token_Constant( $lookup[$current_piece] );
 						break;
 					case "x":
 						$tokens[] = new FormalTheory_RegularExpression_Token_Constant(
@@ -228,6 +203,7 @@ class FormalTheory_RegularExpression_Lexer
 			case 't': return "\t";
 			case 'r': return "\r";
 			case 'n': return "\n";
+			case 'v': return "\v";
 			case 'x': return $this->_lex_hex();
 		}
 		return $char;

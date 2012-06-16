@@ -14,6 +14,7 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 			case "\n": return '\n';
 			case "\t": return '\t';
 			case "\r": return '\r';
+			case "\v": return '\v';
 			case "^": case "$":
 			case "*": case "+": case "?":
 			case ".": case "|": case "\\":
