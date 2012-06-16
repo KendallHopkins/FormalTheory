@@ -4,6 +4,4 @@ php:
     - 5.3
     - 5.4
 
-env: LANG=en_US.ISO8859-1
-
 script: phpunit --verbose

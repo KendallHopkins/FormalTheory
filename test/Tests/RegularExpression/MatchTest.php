@@ -10,6 +10,7 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 		$word_range = array_merge(
 			range( "A", "Z" ), range( "a", "z" ),
 			$number_range, array( "_" ),
+			array( chr( 170 ), chr( 181 ), chr( 186 ) ),
 			array_map( "chr", range( 192, 214 ) ),
 			array_map( "chr", range( 216, 246 ) ),
 			array_map( "chr", range( 248, 255 ) )
@@ -47,8 +48,8 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 			array( '^\W$', array_diff( $full_range, $word_range ) ),
 			array( '^\d$', $number_range ),
 			array( '^\D$', array_diff( $full_range, $number_range ) ),
-			array( '^\s$', array( " ", "\t", "\n", "\r", "\f", chr( 160 ) ) ),
-			array( '^\S$', array_diff( $full_range, array( " ", "\t", "\n", "\r", "\f", chr( 160 ) ) ) ),
+			array( '^\s$', array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ) ),
+			array( '^\S$', array_diff( $full_range, array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ) ) ),
 			array( '^(1{2}){2}$', array( "1111" ) ),
 			array( '^(1{2}){2$', array( "11{2" ) ),
 			array( '^{2{2}$', array( "{22" ) ),
@@ -74,11 +75,11 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 		
 		$extra = array_diff( $actualy_matches_array, $expected_matches_array );
 		$missing = array_diff( $expected_matches_array, $actualy_matches_array );
-		$this->assertSame( array(), $extra, "extra matches" );
-		$this->assertSame( array(), $missing, "missing matches" );
+		$this->assertSame( array(), array_values( array_map( "ord", $extra ) ), "extra matches" );
+		$this->assertSame( array(), array_values( array_map( "ord", $missing ) ), "missing matches" );
 		
 		$false_matches = array_diff( $expected_matches_array, preg_filter( "~".$regex_string."~", '$0', $expected_matches_array ) );
-		$this->assertSame( array(), $false_matches, "Regex '$regex_string' had false matches." );
+		$this->assertSame( array(), array_values( array_map( "ord", $false_matches ) ), "Regex '$regex_string' had false matches." );
 	}
 	
 	function dataProviderForTestSimpleReadFail()
