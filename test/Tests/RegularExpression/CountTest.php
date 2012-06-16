@@ -27,11 +27,6 @@ class FormalTheory_RegularExpression_Tests_CountTest extends PHPUnit_Framework_T
 	{
 		$lexer = new FormalTheory_RegularExpression_Lexer();
 		$dfa = $lexer->lex( $regex_string )->getDFA();
-		
-		if( $dfa->countSolutions() !== $expected_solution_count ) {
-			print $dfa->display().PHP_EOL;
-			exit();
-		}
 		$this->assertSame( $dfa->countSolutions(), $expected_solution_count );
 	}
 	
