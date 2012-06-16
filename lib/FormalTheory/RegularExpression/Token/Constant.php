@@ -5,9 +5,34 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 	
 	private $_string;
 	
+	static function escapeChar( $char )
+	{
+		if( ! is_string( $char ) || strlen( $char ) !== 1 ) {
+			throw new RuntimeException( "bad string variable" );
+		}
+		switch( $char ) {
+			case "\n": return '\n';
+			case "\t": return '\t';
+			case "\r": return '\r';
+			case "^": case "$":
+			case "*": case "+": case "?":
+			case ".": case "|": case "\\":
+			case "(": case ")":
+			case "[": case "]":
+			case "{": /* case "{" */
+				return "\\{$char}";
+		}
+		if( ctype_print( $char ) ) {
+			return $char;
+		}
+		$hex = dechex( ord( $char ) );
+		if( strlen( $hex ) === 1 ) $hex = "0{$hex}";
+		return "\\x{$hex}";
+	}
+	
 	function __construct( $string )
 	{
-		if( ! is_string( $string ) && strlen( $string ) !== 1 ) {
+		if( ! is_string( $string ) || strlen( $string ) !== 1 ) {
 			throw new RuntimeException( "bad string variable" );
 		}
 		$this->_string = $string;
@@ -20,7 +45,7 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 	
 	function __toString()
 	{
-		return $this->_string;
+		return self::escapeChar( $this->_string );
 	}
 	
 	function getMatches()

@@ -19,7 +19,37 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	
 	function __toString()
 	{
-		return "[".implode( "", $this->charArray() )."]";
+		$string = "";
+		$offset_array = array_map( "ord", $this->charArray() );
+		if( count( $offset_array ) === 256 ) return ".";
+		$current_run = array();
+		$last_offset = NULL;
+		foreach( $offset_array as $offset ) {
+			if( $offset-1 !== $last_offset ) {
+				if( count( $current_run ) > 2 ) {
+					$first_offset = array_shift( $current_run );
+					$string .=
+						FormalTheory_RegularExpression_Token_Constant::escapeChar( chr( $first_offset ) ).
+						"-".
+						FormalTheory_RegularExpression_Token_Constant::escapeChar( chr( $last_offset ) );
+				} else {
+					$string .= implode( "", array_map( array( "FormalTheory_RegularExpression_Token_Constant", "escapeChar" ), array_map( "chr", $current_run ) ) );
+				}
+				$current_run = array();
+			}
+			$current_run[] = $offset;
+			$last_offset = $offset;
+		}
+		if( count( $current_run ) > 2 ) {
+			$first_offset = array_shift( $current_run );
+			$string .=
+				FormalTheory_RegularExpression_Token_Constant::escapeChar( chr( $first_offset ) ).
+				"-".
+				FormalTheory_RegularExpression_Token_Constant::escapeChar( chr( $last_offset ) );
+		} else {
+			$string .= implode( "", array_map( array( "FormalTheory_RegularExpression_Token_Constant", "escapeChar" ), array_map( "chr", $current_run ) ) );
+		}
+		return "[{$string}]";
 	}
 	
 	function charArray()
