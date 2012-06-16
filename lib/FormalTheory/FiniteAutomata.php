@@ -608,6 +608,43 @@ EOT;
 			! self::intersection( self::negate( $this ), $fa )->validSolutionExists();
 	}
 	
+	function countSolutions()
+	{
+		if( ! $this->isDeterministic() ) {
+			throw new Exception( "fa must be deterministic" );
+		}
+		
+		if( ! $this->validSolutionExists() ) {
+			return 0;
+		}
+		
+		$state_solutions = array_fill_keys( array_keys( $this->_states ), NULL );
+		do {
+			$did_make_change = FALSE;
+			$not_done_state_solutions = array_filter( $state_solutions, "is_null" );
+			foreach( $this->_states as $state ) {
+				if( ! is_null( $state_solutions[$state->getHash()] ) ) continue;
+				$has_not_done_transition = FALSE;
+				foreach( $state->getTransitionLookupArray() as $transition_states ) {
+					if( array_intersect_key( $not_done_state_solutions, $transition_states ) ) {
+						$has_not_done_transition = TRUE;
+					}
+				}
+				if( ! $has_not_done_transition ) {
+					$did_make_change = TRUE;
+					$done_state_solutions = array_filter( $state_solutions, function( $state_solution ) { return ! is_null( $state_solution ); } );
+					$total = $state->getIsFinal() ? 1 : 0;
+					foreach( $state->getTransitionLookupArray() as $transition_states ) {
+						$total += array_sum( array_intersect_key( $done_state_solutions, $transition_states ) );
+					}
+					$state_solutions[$state->getHash()] = $total;
+					break;
+				}
+			}
+		} while( is_null( $state_solutions[$this->getStartState()->getHash()] ) && $did_make_change );
+		return $state_solutions[$this->getStartState()->getHash()];
+	}
+	
 	function getRegex()
 	{
 		if( array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 127 ) ) ) ) {

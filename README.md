@@ -6,6 +6,7 @@ FormalTheory is a library that allows for manipulation and conversion of NFAs, D
  - Regex to NFA conversion
  - NFA to DFA conversion (determinize)
  - DFA minimization
+ - DFA solution counting
  - FA equality
  - FA has a valid solution
  - FA print
@@ -22,7 +23,6 @@ Note: FA is either a DFA or NFA
 
 Coming Soon™
 
- - DFA solution counting
  - DFA to Regex conversion (complex)
  - Regex optimization
  - Generalized DFA solving based on positive/negative match list
