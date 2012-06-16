@@ -5,15 +5,11 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 	
 	function dataProviderForTestSimpleRead()
 	{
-		$full_range = array_map( "chr", range( 0, 255 ) );
+		$full_range = array_map( "chr", range( 0, 127 ) );
 		$number_range = array( "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" );
 		$word_range = array_merge(
 			range( "A", "Z" ), range( "a", "z" ),
-			$number_range, array( "_" ),
-			array( chr( 170 ), chr( 181 ), chr( 186 ) ),
-			array_map( "chr", range( 192, 214 ) ),
-			array_map( "chr", range( 216, 246 ) ),
-			array_map( "chr", range( 248, 255 ) )
+			$number_range, array( "_" )
 		);
 		return array(
 			array( "^ab$", array( "ab" ) ),
@@ -48,8 +44,8 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 			array( '^\W$', array_diff( $full_range, $word_range ) ),
 			array( '^\d$', $number_range ),
 			array( '^\D$', array_diff( $full_range, $number_range ) ),
-			array( '^\s$', array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ) ),
-			array( '^\S$', array_diff( $full_range, array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ) ) ),
+			array( '^\s$', array( " ", "\t", "\n", "\r", "\f" ) ),
+			array( '^\S$', array_diff( $full_range, array( " ", "\t", "\n", "\r", "\f" ) ) ),
 			array( '^(1{2}){2}$', array( "1111" ) ),
 			array( '^(1{2}){2$', array( "11{2" ) ),
 			array( '^{2{2}$', array( "{22" ) ),

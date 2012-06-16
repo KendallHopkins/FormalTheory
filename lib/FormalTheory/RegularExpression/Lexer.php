@@ -95,11 +95,7 @@ class FormalTheory_RegularExpression_Lexer
 				$number_range = array( "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" );
 				$word_range = array_merge(
 					range( "A", "Z" ), range( "a", "z" ),
-					$number_range, array( "_" ),
-					array( chr( 170 ), chr( 181 ), chr( 186 ) ),
-					array_map( "chr", range( 192, 214 ) ),
-					array_map( "chr", range( 216, 246 ) ),
-					array_map( "chr", range( 248, 255 ) )
+					$number_range, array( "_" )
 				);
 				switch( $current_piece ) {
 					case "w":
@@ -115,10 +111,10 @@ class FormalTheory_RegularExpression_Lexer
 						$tokens[] = new FormalTheory_RegularExpression_Token_Set( $number_range, FALSE );
 						break;
 					case "s":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ), TRUE );
+						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f" ), TRUE );
 						break;
 					case "S":
-						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f", chr( 133 ), chr( 160 ) ), FALSE );
+						$tokens[] = new FormalTheory_RegularExpression_Token_Set( array( " ", "\t", "\n", "\r", "\f" ), FALSE );
 						break;
 					case "t":
 						$tokens[] = new FormalTheory_RegularExpression_Token_Constant( "\t" );

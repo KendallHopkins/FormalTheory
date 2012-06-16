@@ -21,7 +21,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	{
 		$string = "";
 		$offset_array = array_map( "ord", $this->charArray() );
-		if( count( $offset_array ) === 256 ) return ".";
+		if( count( $offset_array ) === 128 ) return ".";
 		$current_run = array();
 		$last_offset = NULL;
 		foreach( $offset_array as $offset ) {
@@ -56,7 +56,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	{
 		return $this->_is_positive
 			? $this->_char_array
-			: array_diff( array_map( "chr", range( 0, 255 ) ), $this->_char_array );
+			: array_diff( array_map( "chr", range( 0, 127 ) ), $this->_char_array );
 	}
 	
 	function getMatches()
