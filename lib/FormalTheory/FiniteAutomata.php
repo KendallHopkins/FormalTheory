@@ -610,7 +610,7 @@ EOT;
 	
 	function getRegex()
 	{
-		if( array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 255 ) ) ) ) {
+		if( array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 127 ) ) ) ) {
 			throw new LogicException( "alphabet contain non-regex symbols" );
 		}
 		$empty_table = array_fill_keys( array_merge( array_keys( $this->_states ), array( "final" ) ), array() );
