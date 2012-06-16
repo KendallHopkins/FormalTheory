@@ -596,6 +596,18 @@ EOT;
 	 	return $fa;
 	}
 	
+	function compare( self $fa )
+	{
+		return self::compareByNegationAndIntersection( $fa );
+	}
+	
+	function compareByNegationAndIntersection( self $fa )
+	{
+		return
+			! self::intersection( $this, self::negate( $fa ) )->validSolutionExists() &&
+			! self::intersection( self::negate( $this ), $fa )->validSolutionExists();
+	}
+	
 	function getRegex()
 	{
 		if( array_diff( $this->getAlphabet(), array_map( "chr", range( 0, 255 ) ) ) ) {
