@@ -8,6 +8,8 @@ FormalTheory is a library that allows for manipulation and conversion of NFAs, D
  - DFA minimization
  - DFA solution counting
  - FA equality
+ - FA superset/subset test
+ - FA proper superset/subset test
  - FA has a valid solution
  - FA print
  - FA export as DOT

@@ -596,16 +596,34 @@ EOT;
 	 	return $fa;
 	}
 	
-	function compare( self $fa )
+	function isSubsetOf( self $fa )
 	{
-		return self::compareByNegationAndIntersection( $fa );
+		return ! self::intersection( $this, self::negate( $fa ) )->validSolutionExists();
 	}
 	
-	function compareByNegationAndIntersection( self $fa )
+	function isProperSubsetOf( self $fa )
 	{
-		return
-			! self::intersection( $this, self::negate( $fa ) )->validSolutionExists() &&
-			! self::intersection( self::negate( $this ), $fa )->validSolutionExists();
+		return $this->isSubsetOf( $fa ) && ! $this->isSupersetOf( $fa );
+	}
+	
+	function isSuperSetOf( self $fa )
+	{
+		return $fa->isSubsetOf( $this );
+	}
+	
+	function isProperSupersetOf( self $fa )
+	{
+		return $fa->isProperSubsetOf( $this );
+	}
+	
+	function compare( self $fa )
+	{
+		return self::compareBySubset( $fa );
+	}
+	
+	function compareBySubset( self $fa )
+	{
+		return $this->isSubsetOf( $fa ) && $fa->isSubsetOf( $this );
 	}
 	
 	function countSolutions()
