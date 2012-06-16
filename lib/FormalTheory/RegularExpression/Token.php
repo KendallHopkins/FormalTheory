@@ -52,7 +52,8 @@ abstract class FormalTheory_RegularExpression_Token
 	{
 		$nfa = $this->getNFA();
 		$dfa = $nfa->isDeterministic() ? $nfa : FormalTheory_FiniteAutomata::determinize( $nfa );
-		$dfa->rewriteDuplicateStates();
+		unset( $nfa );
+		$dfa->minimize();
 		return $dfa;
 	}
 	

@@ -248,44 +248,6 @@ EOT;
 		}
 	}
 	
-	function rewriteDuplicateStates()
-	{
-		do {
-			$replace_array = array();
-			$state_lookup = array();
-			foreach( $this->_states as $state_hash => $state ) {
-				$is_final = $state->getIsFinal();
-				$transition_lookup_array = $state->getTransitionLookupArray();
-				$transition_lookup_array = array_map( "array_keys", $transition_lookup_array );
-				array_map( "sort", $transition_lookup_array );
-				ksort( $transition_lookup_array );
-				$lookup_string = serialize( array( "is_final" => $is_final, "transitions" => $transition_lookup_array ) );
-				if( array_key_exists( $lookup_string, $state_lookup ) ) {
-					$replace_array[$state_hash] = $state_lookup[$lookup_string];
-				} else {
-					$state_lookup[$lookup_string] = $state;
-				}
-			}
-			unset( $state_lookup );
-			if( $replace_array ) {
-				foreach( $replace_array as $replaced_state_hash => $replacement_state ) {
-					$replaced_state = $this->_states[$replaced_state_hash];
-					foreach( $replaced_state->getTransitionRefArray() as $transition_symbol => $ref_states ) {
-						foreach( $ref_states as $ref_state ) {
-							$ref_state->addTransition( (string)$transition_symbol, $replacement_state );
-						}
-					}
-					$replaced_state->unlink();
-					unset( $this->_states[$replaced_state_hash] );
-				}
-				$start_state_hash = $this->getStartState()->getHash();
-				if( array_key_exists( $start_state_hash, $replace_array ) ) {
-					$this->setStartState( $replace_array[$start_state_hash] );
-				}
-			}
-		} while( $replace_array );
-	}
-	
 	function addFailureState()
 	{
 		$failure_state = NULL;
