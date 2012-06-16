@@ -639,33 +639,23 @@ EOT;
 			}
 		};
 		
-		$cross_product_strings = function( array $array1, array $array2, $middle ) use ( $build_regex_from_array ) {
-			return array( $build_regex_from_array( $array1 ).$middle.$build_regex_from_array( $array2 ) );
-		};
-		
 		$test = array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) );
 		shuffle( $test );
 		foreach( $test as $state_hash_to_remove ) {
 			foreach( $transition_map[$state_hash_to_remove][0] as $next_state_hash => $next_transitions ) {
 				foreach( $transition_map[$state_hash_to_remove][1] as $prev_state_hash => $prev_transitions ) {
-					if( $next_transitions && $prev_transitions ) {
-						$middle_regex = $build_regex_from_array( $transition_map[$state_hash_to_remove][2] );
-						$new_paths = $cross_product_strings( $prev_transitions, $next_transitions, is_null( $middle_regex ) ? "" : "(".$middle_regex.")*" );
-						if( $next_state_hash === $prev_state_hash ) {
-							$transition_map[$prev_state_hash][2] = array_merge(
-								$transition_map[$prev_state_hash][2],
-								$new_paths
-							);
-						} else {
-							$transition_map[$prev_state_hash][0][$next_state_hash] = array_merge(
-								$transition_map[$prev_state_hash][0][$next_state_hash],
-								$new_paths
-							);
-							$transition_map[$next_state_hash][1][$prev_state_hash] = array_merge(
-								$transition_map[$next_state_hash][1][$prev_state_hash],
-								$new_paths
-							);
-						}
+					if( ! $next_transitions || ! $prev_transitions ) continue;
+					$middle_regex = $build_regex_from_array( $transition_map[$state_hash_to_remove][2] );
+					$new_path =
+						$build_regex_from_array( $prev_transitions ).
+						( is_null( $middle_regex ) ? "" : "(".$middle_regex.")*" ).
+						$build_regex_from_array( $next_transitions );
+					
+					if( $next_state_hash === $prev_state_hash ) {
+						$transition_map[$prev_state_hash][2][] = $new_path;
+					} else {
+						$transition_map[$prev_state_hash][0][$next_state_hash][] = $new_path;
+						$transition_map[$next_state_hash][1][$prev_state_hash][] = $new_path;
 					}
 				}
 			}
