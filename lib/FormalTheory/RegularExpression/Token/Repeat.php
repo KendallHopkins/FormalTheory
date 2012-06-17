@@ -27,7 +27,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 		} else if( $this->_second_number === 1 ) {
 			switch( $this->_first_number ) {
 				case 0: return $this->_token."?";
-				case 1: return $this->_token;
+				case 1: return (string)$this->_token;
 			}
 		} else if( $this->_first_number === 0 && $this->_second_number === 0 ) {
 			return "";
