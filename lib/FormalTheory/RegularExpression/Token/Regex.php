@@ -12,6 +12,11 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 		$this->_is_sub_regex = $is_sub_regex;
 	}
 	
+	function getTokens()
+	{
+		return $this->_token_array;
+	}
+	
 	function __toString()
 	{
 		return implode( "", array_map( function( $token ) {
