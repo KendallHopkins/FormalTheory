@@ -24,8 +24,22 @@ class FormalTheory_RegularExpression_Tests_ToStringTest extends PHPUnit_Framewor
 			array( '\r' ),
 			array( '\t' ),
 			array( '\v' ),
-			array( '.' ),
-			array( "(a|(b|(c|d)))" ),
+			array( "." ),
+			array( "[1-5N-Za-m]" ),
+			array( "[abcdefghijlmnopqrstuvwxz]", "[a-jl-xz]" ),
+			array( "[^]" ),
+			array( "[\^]" ),
+			array( "1{1,1}", "1" ),
+			array( "1{0,1}", "1?" ),
+			array( "1{1,}", "1+" ),
+			array( "1{0,}", "1*" ),
+			array( "1{0,0}", "" ),
+			array( "(a|(b|(c|d)))", "(a|b|c|d)" ),
+			array( "((a|b)|(c|d))", "(a|b|c|d)" ),
+			array( "(((a|b)|c)|d)", "(a|b|c|d)" ),
+			array( "^$" ),
+			array( "^1$" ),
+			array( "^[^]*$" ),
 		);
 	}
 	
@@ -38,7 +52,11 @@ class FormalTheory_RegularExpression_Tests_ToStringTest extends PHPUnit_Framewor
 		if( is_null( $expected_string ) ) $expected_string = $regex_string;
 		$lexer = new FormalTheory_RegularExpression_Lexer();
 		$regex = $lexer->lex( $regex_string );
-		$this->assertSame( $expected_string, (string)$regex );
+		$regex_string = (string)$regex;
+		$this->assertSame( $expected_string, $regex_string );
+		
+		$regex_after_tostring = $lexer->lex( $regex_string );
+		$this->assertTrue( $regex->getNFA()->compare( $regex_after_tostring->getNFA() ) );
 	}
 	
 }
