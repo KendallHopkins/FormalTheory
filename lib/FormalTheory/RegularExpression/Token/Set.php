@@ -67,6 +67,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	{
 		$string = "";
 		$char_array = $this->charArray();
+		if( count( $char_array ) === 128 ) return "[^]";
 		if( count( $char_array ) === 127 && ! in_array( "\n", $char_array ) ) return ".";
 		
 		$all_groups = self::getInverseGroups() + self::getGroups();
