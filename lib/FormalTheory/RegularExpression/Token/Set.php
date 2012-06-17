@@ -58,6 +58,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 				throw new Exception( "non-char found in char array" );
 			}
 		}
+		sort( $char_array );
 		$this->_char_array = array_unique( $char_array );
 		$this->_is_positive = (bool)$is_positive;
 	}
