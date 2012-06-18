@@ -13,9 +13,9 @@ class FormalTheory_RegularExpression_Tests_CountTest extends PHPUnit_Framework_T
 			array( "^1?$", 2 ),
 			array( "^1{0,2}$", 3 ),
 			array( "^1{0,9}$", 10 ),
-			array( "^(1{1,3}){1,4}$", 12 ),
-			array( "^(0|1){10}$", 1024 ),
-			array( "^(0|1){9,10}$", 512 + 1024 ),
+			array( "^(1{1,3}){1,3}$", 9 ),
+			array( "^(0|1){5}$", 32 ),
+			array( "^(0|1){4,5}$", 16 + 32 ),
 		);
 	}
 	
