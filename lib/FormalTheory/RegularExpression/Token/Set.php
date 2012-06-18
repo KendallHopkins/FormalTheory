@@ -65,7 +65,6 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	
 	function __toString()
 	{
-		$string = "";
 		$char_array = $this->charArray();
 		if( count( $char_array ) === 127 && ! in_array( "\n", $char_array ) ) return ".";
 		
@@ -76,6 +75,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	
 	private function ___toString( array $char_array, $should_inverse )
 	{
+		$string = "";
 		if( $should_inverse ) {
 			$char_array = array_diff( array_map( "chr", range( 0, 127 ) ), $char_array );
 		}
