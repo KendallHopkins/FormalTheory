@@ -67,9 +67,18 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 	{
 		$string = "";
 		$char_array = $this->charArray();
-		if( count( $char_array ) === 128 ) return "[^]";
 		if( count( $char_array ) === 127 && ! in_array( "\n", $char_array ) ) return ".";
 		
+		$normal_set = $this->___toString( $char_array, FALSE );
+		$inverse_set = $this->___toString( $char_array, TRUE );
+		return strlen( $normal_set ) <= strlen( $inverse_set ) ? $normal_set : $inverse_set;
+	}
+	
+	private function ___toString( array $char_array, $should_inverse )
+	{
+		if( $should_inverse ) {
+			$char_array = array_diff( array_map( "chr", range( 0, 127 ) ), $char_array );
+		}
 		$all_groups = self::getInverseGroups() + self::getGroups();
 		foreach( $all_groups as $group_char => $group_symbols ) {
 			if( count( array_intersect( $char_array, $group_symbols ) ) === count( $group_symbols ) ) {
@@ -106,9 +115,12 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 		} else {
 			$string .= implode( "", array_map( array( "FormalTheory_RegularExpression_Token_Constant", "escapeChar" ), array_map( "chr", $current_run ) ) );
 		}
-		
-		$is_simple = strlen( $string ) === 1 || preg_match( "/^\\\\(".implode( "|", array_keys( $all_groups ) ).")$/", $string );
-		return $is_simple ? $string : "[{$string}]";
+		if( $should_inverse ) {
+			return "[^{$string}]";
+		} else {
+			$is_simple = strlen( $string ) === 1 || preg_match( "/^\\\\(".implode( "|", array_keys( $all_groups ) ).")$/", $string );
+			return $is_simple ? $string : "[{$string}]";
+		}
 	}
 	
 	function charArray()
