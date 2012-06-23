@@ -1,6 +1,6 @@
 <?php
 
-class FormalTheory_RegularExpression_Tests_CompareTest extends PHPUnit_Framework_TestCase
+class FormalTheory_FiniteAutomata_Tests_CompareTest extends PHPUnit_Framework_TestCase
 {
 	
 	function testBasic()
