@@ -317,16 +317,18 @@ EOT;
 		if( ! $this->isDeterministic() ) {
 			throw new Exception( "fa must be deterministic" );
 		}
-		$this->removeDeadStates();
-		$this->addFailureState();
-		$final_states = array_values( array_filter( $this->_states, function( $state ) {
-			return $state->getIsFinal();
-		} ) );
-		$non_final_states = array_values( array_filter( $this->_states, function( $state ) {
-			return ! $state->getIsFinal();
-		} ) );
+		$final_states = array();
+		$non_final_states = array( NULL );
+		foreach( $this->_states as $state ) {
+			if( $state->getIsFinal() ) {
+				$final_states[] = $state;
+			} else {
+				$non_final_states[] = $state;
+			}
+		}
 		$distinguishable_array = array();
 		$state_hashes = array_keys( $this->_states );
+		$state_hashes[] = NULL;
 		for( $i = 1; $i < count( $state_hashes ); $i++ ) {
 			for( $j = 0; $j < $i; $j++ ) {
 				if( $state_hashes[$i] > $state_hashes[$j] ) {
@@ -336,21 +338,23 @@ EOT;
 				}
 			}
 		}
-		$get_is_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
-			$state1_hash = $state1->getHash();
-			$state2_hash = $state2->getHash();
+		krsort( $distinguishable_array );
+		
+		$get_is_distinguishable = function( FormalTheory_FiniteAutomata_State $state1 = NULL, FormalTheory_FiniteAutomata_State $state2 = NULL ) use ( &$distinguishable_array ) {
+			$state1_hash = $state1 ? $state1->getHash() : NULL;
+			$state2_hash = $state2 ? $state2->getHash() : NULL;
 			if( $state1_hash === $state2_hash ) {
-				throw new RuntimeException( "don't ask if the same state is distinguishable" );
+				return FALSE;
 			}
 			return $state1_hash > $state2_hash
 				? $distinguishable_array[$state1_hash][$state2_hash]
 				: $distinguishable_array[$state2_hash][$state1_hash];
 		};
-		$mark_distinguishable = function( FormalTheory_FiniteAutomata_State $state1, FormalTheory_FiniteAutomata_State $state2 ) use ( &$distinguishable_array ) {
-			$state1_hash = $state1->getHash();
-			$state2_hash = $state2->getHash();
+		$mark_distinguishable = function( FormalTheory_FiniteAutomata_State $state1 = NULL, FormalTheory_FiniteAutomata_State $state2 = NULL ) use ( &$distinguishable_array ) {
+			$state1_hash = $state1 ? $state1->getHash() : NULL;
+			$state2_hash = $state2 ? $state2->getHash() : NULL;
 			if( $state1_hash === $state2_hash ) {
-				throw new RuntimeException( "don't ask if the same state is distinguishable" );
+				throw new RuntimeException( "don't mark the same state is distinguishable" );
 			}
 			if( $state1_hash > $state2_hash ) {
 				if( $distinguishable_array[$state1_hash][$state2_hash] ) {
@@ -370,41 +374,34 @@ EOT;
 				$mark_distinguishable( $final_state, $non_final_state );
 			}
 		}
-		$pairs = array();
-		for( $i = 1; $i < count( $final_states ); $i++ ) {
-			for( $j = 0; $j < $i; $j++ ) {
-				if( ! $get_is_distinguishable( $final_states[$i], $final_states[$j] ) ) {
-					$pairs[] = array( $final_states[$i], $final_states[$j] );
+		$get_pairs = function( array $array ) {
+			$pairs = array();
+			for( $i = 1; $i < count( $array ); $i++ ) {
+				for( $j = 0; $j < $i; $j++ ) {
+					$pairs[] = array( $array[$i], $array[$j] );
 				}
 			}
-		}
-		for( $i = 1; $i < count( $non_final_states ); $i++ ) {
-			for( $j = 0; $j < $i; $j++ ) {
-				if( ! $get_is_distinguishable( $non_final_states[$i], $non_final_states[$j] ) ) {
-					$pairs[] = array( $non_final_states[$i], $non_final_states[$j] );
-				}
-			}
-		}
+			return $pairs;
+		};
+		$pairs = array_merge( $get_pairs( $final_states ), $get_pairs( $non_final_states ) );
 		do {
 			$did_mark = FALSE;
 			foreach( $pairs as $i => $pair ) {
 				list( $state1, $state2 ) = $pair;
 				foreach( $this->getAlphabet() as $symbol ) {
-					list( $next_state1 ) = array_values( $state1->transitions( $symbol ) );
-					list( $next_state2 ) = array_values( $state2->transitions( $symbol ) );
-					if( $next_state1 !== $next_state2 ) {
-						if( $get_is_distinguishable( $next_state1, $next_state2 ) ) {
-							$mark_distinguishable( $state1, $state2 );
-							unset( $pairs[$i] );
-							$did_mark = TRUE;
-							break 1;
-						}
+					$next_state1 = $state1 ? $state1->transition( $symbol ) : NULL;
+					$next_state2 = $state2 ? $state2->transition( $symbol ) : NULL;
+					if( $get_is_distinguishable( $next_state1, $next_state2 ) ) {
+						$mark_distinguishable( $state1, $state2 );
+						unset( $pairs[$i] );
+						$did_mark = TRUE;
+						break 1;
 					}
 				}
 			}
 		} while( $did_mark );
 		
-		krsort( $distinguishable_array );
+		$removed_states = array();
 		foreach( $distinguishable_array as $state1_hash => $state2_hashes ) {
 			$state1 = $this->_states[$state1_hash];
 			foreach( $state2_hashes as $state2_hash => $is_distinguishable ) {
@@ -419,11 +416,13 @@ EOT;
 						$this->setStartState( $state1 );
 					}
 					$state2->unlink();
+					$removed_states[] = $state2;
 				}
 			}
 		}
-		
-		$this->removeDeadStates();
+		foreach( $removed_states as $removed_state ) {
+			unset( $this->_states[$removed_state->getHash()] );
+		}
 	}
 	
 	function isDeterministic()

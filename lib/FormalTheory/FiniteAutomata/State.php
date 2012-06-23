@@ -102,6 +102,16 @@ class FormalTheory_FiniteAutomata_State
 		return array_key_exists( $symbol, $this->_transition_lookup_array ) ? $this->_transition_lookup_array[$symbol] : array();
 	}
 	
+	function transition( $symbol )
+	{
+		$transitions = $this->transitions( $symbol );
+		switch( count( $transitions ) ) {
+			case 0:	return NULL;
+			case 1: return current( $transitions );
+			default: throw new RuntimeException( "expected only 1 transition for symbol" );
+		}
+	}
+	
 	function isDeterministic()
 	{
 		if( array_key_exists( "", $this->_transition_lookup_array ) ) {
