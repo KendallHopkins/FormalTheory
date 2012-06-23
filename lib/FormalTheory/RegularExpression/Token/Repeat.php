@@ -19,20 +19,23 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 	
 	function __toString()
 	{
+		if( $this->_first_number === 0 && $this->_second_number === 0 ) {
+			return "";
+		}
+		$should_be_grouped = $this->_token instanceof FormalTheory_RegularExpression_Token_Regex || $this->_token instanceof FormalTheory_RegularExpression_Token_Union;
+		$token_string = $should_be_grouped ? "({$this->_token})" : (string)$this->_token;
 		if( is_null( $this->_second_number ) ) {
 			switch( $this->_first_number ) {
-				case 0: return $this->_token."*";
-				case 1: return $this->_token."+";
+				case 0: return "{$token_string}*";
+				case 1: return "{$token_string}+";
 			}
 		} else if( $this->_second_number === 1 ) {
 			switch( $this->_first_number ) {
-				case 0: return $this->_token."?";
-				case 1: return (string)$this->_token;
+				case 0: return "{$token_string}?";
+				case 1: return $token_string;
 			}
-		} else if( $this->_first_number === 0 && $this->_second_number === 0 ) {
-			return "";
 		}
-		return $this->_token.'{'.$this->_first_number.','.$this->_second_number.'}';
+		return "{$token_string}{{$this->_first_number},{$this->_second_number}}";
 	}
 	
 	function getToken()
