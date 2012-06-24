@@ -9,6 +9,7 @@ class FormalTheory_RegularExpression_Tests_ToStringTest extends PHPUnit_Framewor
 			array( "ab" ),
 			array( "(ab)", "ab" ),
 			array( "(a)(b)", "ab" ),
+			array( "(a(b|c)(d))", "a(b|c)d" ),
 			array( "((a)(b))", "ab" ),
 			array( "((ab))", "ab" ),
 			array( "((ab))*", "(ab)*" ),
