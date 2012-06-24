@@ -613,7 +613,7 @@ EOT;
 			$table = $empty_table;
 			foreach( $lookup_array as $transition => $states ) {
 				foreach( array_keys( $states ) as $state_hash ) {
-					$table[$state_hash][] = $transition;
+					$table[$state_hash][] = new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Constant( (string)$transition ) ), TRUE );
 				}
 			}
 			return $table;
@@ -634,30 +634,46 @@ EOT;
 		unset( $transition_map["final"][0]["final"] );
 		unset( $transition_map["final"][1]["final"] );
 		foreach( array_keys( array_filter( $this->_states, function( $state ) { return $state->getIsFinal(); } ) ) as $final_state_hash ) {
-			$transition_map[$final_state_hash][0]["final"][] = "";
-			$transition_map["final"][1][$final_state_hash][] = "";
+			$transition_map[$final_state_hash][0]["final"][] = new FormalTheory_RegularExpression_Token_Regex( array(), TRUE );
+			$transition_map["final"][1][$final_state_hash][] = new FormalTheory_RegularExpression_Token_Regex( array(), TRUE );
 		}
 		
 		$build_regex_from_array = function( array $array ) {
 			switch( count( $array ) ) {
 				case 0:	return NULL;
 				case 1: return $array[0];
-				default: return "(".implode( "|", $array ).")";
+				default: return new FormalTheory_RegularExpression_Token_Union( $array );
 			}
 		};
 		
-		$test = array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) );
-		shuffle( $test );
-		foreach( $test as $state_hash_to_remove ) {
+		$state_hashes_to_remove = array_diff( array_keys( $transition_map ), array( $start_state_hash, "final" ) );
+		
+		// Order states to remove by least complex first
+		usort( $state_hashes_to_remove, function( $state_hash1, $state_hash2 ) use ( $transition_map ) {
+			$state1_count1 = count( array_filter( $transition_map[$state_hash1][0] ) );
+			$state1_count2 = count( array_filter( $transition_map[$state_hash1][1] ) );
+			$state1_count3 = count( array_filter( $transition_map[$state_hash1][2] ) );
+			$state2_count1 = count( array_filter( $transition_map[$state_hash2][0] ) );
+			$state2_count2 = count( array_filter( $transition_map[$state_hash2][1] ) );
+			$state2_count3 = count( array_filter( $transition_map[$state_hash2][2] ) );
+			return ( $state1_count1 + $state1_count2 + $state1_count3 ) > ( $state2_count1 + $state2_count2 + $state2_count3 )
+				? 1
+				: -1;
+		} );
+		
+		foreach( $state_hashes_to_remove as $state_hash_to_remove ) {
 			foreach( $transition_map[$state_hash_to_remove][0] as $next_state_hash => $next_transitions ) {
 				foreach( $transition_map[$state_hash_to_remove][1] as $prev_state_hash => $prev_transitions ) {
 					if( ! $next_transitions || ! $prev_transitions ) continue;
 					$middle_regex = $build_regex_from_array( $transition_map[$state_hash_to_remove][2] );
-					$new_path =
-						$build_regex_from_array( $prev_transitions ).
-						( is_null( $middle_regex ) ? "" : "(".$middle_regex.")*" ).
-						$build_regex_from_array( $next_transitions );
-					
+					$new_path = new FormalTheory_RegularExpression_Token_Regex( array(
+						$build_regex_from_array( $prev_transitions ),
+						( is_null( $middle_regex )
+							? new FormalTheory_RegularExpression_Token_Regex( array(), TRUE )
+							: new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Repeat( $middle_regex, 0 ) ), TRUE )
+						),
+						$build_regex_from_array( $next_transitions )
+					), TRUE );
 					if( $next_state_hash === $prev_state_hash ) {
 						$transition_map[$prev_state_hash][2][] = $new_path;
 					} else {
@@ -680,20 +696,21 @@ EOT;
 		if( is_null( $start_to_finish ) ) {
 			throw new LogicException( "DFA has no valid solutions" );
 		}
-		$main_pipe_regex = "";
+		$main_pipe_regex = array();
 		if( ! is_null( $start_to_start ) ) {
-			$main_pipe_regex .= "(".$start_to_start.")*";
+			$main_pipe_regex[] = new FormalTheory_RegularExpression_Token_Repeat( $start_to_start, 0 );
 		}
-		$main_pipe_regex .= $start_to_finish;
+		$main_pipe_regex[] = $start_to_finish;
 		if( ! is_null( $finish_to_finsh ) ) {
-			$main_pipe_regex .= "(".$finish_to_finsh.")*";
+			$main_pipe_regex[] = new FormalTheory_RegularExpression_Token_Repeat( $finish_to_finsh, 0 );
 		}
-		$output_regex = "^";
+		$output_regex = array( new FormalTheory_RegularExpression_Token_Special( "^" ) );
 		if( ! is_null( $start_to_finish ) && ! is_null( $finish_to_start ) ) {
-			$output_regex .= "(".$main_pipe_regex.$finish_to_start.")*";
+			$output_regex[] = new FormalTheory_RegularExpression_Token_Regex( array_merge( $main_pipe_regex, array( $finish_to_start ) ), TRUE );
 		}
-		$output_regex .= $main_pipe_regex."$";
-		return $output_regex;
+		$output_regex[] = new FormalTheory_RegularExpression_Token_Regex( $main_pipe_regex, TRUE );
+		$output_regex[] = new FormalTheory_RegularExpression_Token_Special( "$" );
+		return new FormalTheory_RegularExpression_Token_Regex( $output_regex, FALSE );
 	}
 	
 	static private function _getDuplicateStateHashArray( array $states, array $alphabet )
