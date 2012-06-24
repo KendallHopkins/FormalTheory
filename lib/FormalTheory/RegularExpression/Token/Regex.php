@@ -8,6 +8,11 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 	
 	function __construct( array $token_array, $is_sub_regex )
 	{
+		foreach( $token_array as $token ) {
+			if( ! $token instanceof FormalTheory_RegularExpression_Token ) {
+				throw new RuntimeException( "regex can only take token: ".var_export( $token, TRUE ) );
+			}
+		}
 		$this->_token_array = array_values( $token_array );
 		$this->_is_sub_regex = $is_sub_regex;
 	}

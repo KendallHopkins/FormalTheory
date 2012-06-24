@@ -9,7 +9,7 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 	{
 		foreach( $regex_array as $regex ) {
 			if( ! $regex instanceof FormalTheory_RegularExpression_Token_Regex ) {
-				throw new RuntimeException( "union can only take regex" );
+				throw new RuntimeException( "union can only take regex: ".var_export( $regex, TRUE ) );
 			}
 		}
 		$this->_regex_array = $regex_array;
