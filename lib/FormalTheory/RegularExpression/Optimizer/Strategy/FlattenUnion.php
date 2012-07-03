@@ -41,7 +41,6 @@ class FormalTheory_RegularExpression_Optimizer_Strategy_FlattenUnion extends For
 			if( $sub_token instanceof FormalTheory_RegularExpression_Token_Union ) {
 				$sub_tokens = array_merge( $sub_tokens, $sub_token->getTokens() );
 			} else if( $sub_token instanceof FormalTheory_RegularExpression_Token_Set ) {
-				
 				foreach( $sub_token->charArray() as $char ) {
 					$sub_tokens[] = new FormalTheory_RegularExpression_Token_Constant( $char );
 				}
