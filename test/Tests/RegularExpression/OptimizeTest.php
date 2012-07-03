@@ -36,6 +36,9 @@ class FormalTheory_RegularExpression_Tests_OptimizeTest extends PHPUnit_Framewor
 			array( "^(11)*111$", "^(11)+1$" ),
 			array( "^(11)*1111$", "^(11){2,}$" ),
 			array( "^11(11)*11$", "^(11){2,}$" ),
+			array( "^1{1}$", "^1$" ),
+			array( "^1{0}$", "^$" ),
+			array( "^(1{0}|1{1})$", "^1?$" ),
 			//unoptimizable
 			array( "^(1{2})*$" ),
 			array( "^10(01)*$" ),
