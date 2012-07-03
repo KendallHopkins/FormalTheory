@@ -34,6 +34,8 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 				case 0: return "{$token_string}?";
 				case 1: return $token_string;
 			}
+		} else if( $this->_first_number === $this->_second_number ) {
+			return "{$token_string}{{$this->_first_number}}";
 		}
 		return "{$token_string}{{$this->_first_number},{$this->_second_number}}";
 	}
