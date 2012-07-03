@@ -34,6 +34,14 @@ abstract class FormalTheory_RegularExpression_Token
 	
 	function getNFA()
 	{
+		$create_loop_state = function( FormalTheory_FiniteAutomata $fa ) {
+			$state = $fa->createState();
+			foreach( $fa->getAlphabet() as $symbol ) {
+				$state->addTransition( $symbol, $state );
+			}
+			return $state;
+		};
+		
 		$fa = new FormalTheory_FiniteAutomata( array_map( "chr", range( 0, 127 ) ) );
 		
 		$start_states = $fa->createStates( 4 );
@@ -42,11 +50,11 @@ abstract class FormalTheory_RegularExpression_Token
 		$fa->setStartState( $start_states[0] );
 		$end_states[3]->setIsFinal( TRUE );
 		
-		$start_loop_state = $fa->createLoopState();
+		$start_loop_state = $create_loop_state( $fa );
 		$start_states[0]->addTransition( "", $start_loop_state );
 		$start_loop_state->addTransition( "", $start_states[2] );
 		
-		$end_loop_state = $fa->createLoopState();
+		$end_loop_state = $create_loop_state( $fa );
 		$end_states[1]->addTransition( "", $end_loop_state );
 		$end_states[2]->addTransition( "", $end_loop_state );
 		$end_loop_state->addTransition( "", $end_states[3] );

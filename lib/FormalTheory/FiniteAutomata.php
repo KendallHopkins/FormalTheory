@@ -43,15 +43,6 @@ class FormalTheory_FiniteAutomata
 		return $this->_states[$state->getHash()] = $state;
 	}
 	
-	function createLoopState()
-	{
-		$state = $this->createState();
-		foreach( $this->_alphabet as $symbol ) {
-			$state->addTransition( $symbol, $state );
-		}
-		return $state;
-	}
-	
 	function createStates( $n )
 	{
 		$output = array();
