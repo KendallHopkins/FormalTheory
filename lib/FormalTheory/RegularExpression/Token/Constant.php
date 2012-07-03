@@ -63,6 +63,11 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 		};
 	}
 	
+	protected function _compare( $token )
+	{
+		return $this->_string === $token->_string;
+	}
+	
 }
 
 ?>

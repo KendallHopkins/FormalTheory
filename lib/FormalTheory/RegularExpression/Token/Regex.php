@@ -70,6 +70,19 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 		};
 	}
 	
+	protected function _compare( $token )
+	{
+		if( count( $this->_token_array ) !== count( $token->_token_array ) ) {
+			return FALSE;
+		}
+		for( $i = 0; $i < count( $this->_token_array ); $i++ ) {
+			if( ! $this->_token_array[$i]->compare( $token->_token_array[$i] ) ) {
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+	
 }
 
 ?>

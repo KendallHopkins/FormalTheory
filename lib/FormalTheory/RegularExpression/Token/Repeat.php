@@ -22,7 +22,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 		if( $this->_first_number === 0 && $this->_second_number === 0 ) {
 			return "";
 		}
-		$should_be_grouped = $this->_token instanceof FormalTheory_RegularExpression_Token_Regex || $this->_token instanceof FormalTheory_RegularExpression_Token_Union;
+		$should_be_grouped = $this->_token instanceof FormalTheory_RegularExpression_Token_Regex || $this->_token instanceof FormalTheory_RegularExpression_Token_Union || $this->_token instanceof FormalTheory_RegularExpression_Token_Repeat;
 		$token_string = $should_be_grouped ? "({$this->_token})" : (string)$this->_token;
 		if( is_null( $this->_second_number ) ) {
 			switch( $this->_first_number ) {
@@ -119,6 +119,14 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 				$current_states[3]->addTransition( "", $end_states[3] );
 			}
 		};
+	}
+	
+	protected function _compare( $token )
+	{
+		return
+			$this->_first_number === $token->_first_number &&
+			$this->_second_number === $token->_second_number &&
+			$this->_token->compare( $token->_token );
 	}
 	
 }

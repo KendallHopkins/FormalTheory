@@ -7,6 +7,16 @@ abstract class FormalTheory_RegularExpression_Token
 	
 	abstract function getMatches();
 	
+	abstract protected function _compare( $token );
+	
+	function compare( self $token )
+	{
+		if( get_class( $this ) !== get_class( $token ) ) {
+			return FALSE;
+		}
+		return $this->_compare( $token );
+	}
+	
 	static function crossProductMatchArray( $match_array1, $match_array2 )
 	{
 		$output = array();

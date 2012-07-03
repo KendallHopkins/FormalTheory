@@ -61,6 +61,32 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 		};
 	}
 	
+	protected function _compare( $token )
+	{
+		$this_done = array();
+		$token_done = array();
+		foreach( $this->_regex_array as $i => $sub_token1 ) {
+			if( in_array( $i, $this_done ) ) continue;
+			for( $a = $i+1; $a < count( $this->_regex_array ); $a++ ) {
+				if( $sub_token1->compare( $this->_regex_array[$a] ) ) {
+					$this_done[] = $a;
+				}
+			}
+			$did_match = FALSE;
+			foreach( $token->_regex_array as $j => $sub_token2 ) {
+				if( in_array( $j, $token_done ) ) continue;
+				if( $sub_token1->compare( $sub_token2 ) ) {
+					$did_match = TRUE;
+					$token_done[] = $j;
+				}
+			}
+			if( ! $did_match ) {
+				return FALSE;
+			}
+		}
+		return count( $token_done ) === count( $token->_regex_array );
+	}
+	
 }
 
 ?>

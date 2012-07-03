@@ -148,6 +148,11 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 		};
 	}
 	
+	protected function _compare( $token )
+	{
+		return $this->charArray() === $token->charArray();
+	}
+	
 }
 
 ?>
