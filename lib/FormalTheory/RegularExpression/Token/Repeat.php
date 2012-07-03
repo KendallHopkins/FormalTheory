@@ -91,6 +91,12 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 		$first_number = $this->_first_number;
 		$second_number = $this->_second_number;
 		return function( $fa, $start_states, $end_states ) use ( $token, $first_number, $second_number ) {
+			$add_lambda_transition = function( $from_states, $to_states ) {
+				$from_states[0]->addTransition( "", $to_states[0] );
+				$from_states[1]->addTransition( "", $to_states[1] );
+				$from_states[2]->addTransition( "", $to_states[2] );
+				$from_states[3]->addTransition( "", $to_states[3] );
+			};
 			$fa_closure = $token->getFiniteAutomataClosure();
 			$current_states = $start_states;
 			$is_finite = ! is_null( $second_number );
@@ -101,10 +107,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 			}
 			if( $is_finite ) {
 				for( ; $i < $second_number + 1; $i++ ) {
-					$current_states[0]->addTransition( "", $end_states[0] );
-					$current_states[1]->addTransition( "", $end_states[1] );
-					$current_states[2]->addTransition( "", $end_states[2] );
-					$current_states[3]->addTransition( "", $end_states[3] );
+					$add_lambda_transition( $current_states, $end_states );
 					if( $i < $second_number ) {
 						$next_states = $fa->createStates( 4 );
 						$fa_closure( $fa, $current_states, $next_states );
@@ -112,11 +115,10 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 					}
 				}
 			} else {
-				$fa_closure( $fa, $current_states, $current_states );
-				$current_states[0]->addTransition( "", $end_states[0] );
-				$current_states[1]->addTransition( "", $end_states[1] );
-				$current_states[2]->addTransition( "", $end_states[2] );
-				$current_states[3]->addTransition( "", $end_states[3] );
+				$isolation_states = $fa->createStates( 4 );
+				$add_lambda_transition( $current_states, $isolation_states );
+				$fa_closure( $fa, $isolation_states, $isolation_states );
+				$add_lambda_transition( $isolation_states, $end_states );
 			}
 		};
 	}

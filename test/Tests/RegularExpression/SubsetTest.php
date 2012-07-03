@@ -16,6 +16,7 @@ class FormalTheory_RegularExpression_Tests_SubsetTest extends PHPUnit_Framework_
 			array( "^0*$", "^(0|1)*$", TRUE ),
 			array( "^(0|1)*$", "^0*$", FALSE ),
 			array( "^1{0,5}$", "^1+$", FALSE ),
+			array( "^a+$", "^(a*[bc])*$", FALSE )
 		);
 	}
 	
