@@ -168,16 +168,20 @@ class FormalTheory_RegularExpression_Lexer
 						$last_is_escape = TRUE;
 						break;
 					case '-':
-						$prev_token = array_pop( $tokens );
-						$this->_current_offset++;
-						if( $this->_regex_pieces[$this->_current_offset] === '\\' ) {
+						if( $tokens ) {
+							$prev_token = array_pop( $tokens );
 							$this->_current_offset++;
-							$next_token = $this->_lex_set_getEscaped( $this->_regex_pieces[$this->_current_offset] );
+							if( $this->_regex_pieces[$this->_current_offset] === '\\' ) {
+								$this->_current_offset++;
+								$next_token = $this->_lex_set_getEscaped( $this->_regex_pieces[$this->_current_offset] );
+							} else {
+								$next_token = $this->_regex_pieces[$this->_current_offset];
+							}
+							foreach( range( $prev_token, $next_token ) as $range_token ) {
+								$tokens[] = (string)$range_token;
+							}
 						} else {
-							$next_token = $this->_regex_pieces[$this->_current_offset];
-						}
-						foreach( range( $prev_token, $next_token ) as $range_token ) {
-							$tokens[] = (string)$range_token;
+							$tokens[] = "-";
 						}
 						break;
 					case ']':
