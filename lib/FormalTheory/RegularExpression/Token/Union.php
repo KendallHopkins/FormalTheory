@@ -8,26 +8,19 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 	function __construct( array $regex_array )
 	{
 		foreach( $regex_array as $regex ) {
-			if( ! $regex instanceof FormalTheory_RegularExpression_Token_Regex ) {
-				throw new RuntimeException( "union can only take regex: ".var_export( $regex, TRUE ) );
+			if( ! $regex instanceof FormalTheory_RegularExpression_Token ) {
+				throw new RuntimeException( "union can only take tokens: ".var_export( $regex, TRUE ) );
 			}
 		}
-		$this->_regex_array = $regex_array;
+		$this->_regex_array = array_values( $regex_array );
 	}
 	
 	function __toString()
 	{
-		
-		return implode( "|", array_map( function( $regex ) {
-			$regex_tokens = $regex->getTokens();
-			if( count( $regex_tokens ) === 1 && $regex_tokens[0] instanceof FormalTheory_RegularExpression_Token_Union ) {
-				return substr( $regex, 1, -1 );
-			}
-			return (string)$regex;
-		}, $this->_regex_array ) );
+		return implode( "|", $this->_regex_array );
 	}
 	
-	function getRegexArray()
+	function getTokens()
 	{
 		return $this->_regex_array;
 	}
