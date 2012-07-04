@@ -20,11 +20,13 @@ FormalTheory is a library that allows for manipulation and conversion of NFAs, D
  - FA to Regex conversion (basic)
  - Heavy Unit Test Coverage
  - Modern Autoloading Support
- - Regex optimization
+ - Regex optimization via rules
 
 Note: FA is either a DFA or NFA
 
 Coming Soon™
+
+ - Regex optimization via mutations
  - Generalized DFA solving based on positive/negative match list
 
 [![Build Status](https://secure.travis-ci.org/KendallHopkins/FormalTheory.png?branch=master)](http://travis-ci.org/KendallHopkins/FormalTheory)
