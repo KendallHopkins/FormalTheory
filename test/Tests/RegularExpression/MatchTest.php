@@ -58,6 +58,7 @@ class FormalTheory_RegularExpression_Tests_MatchTest extends PHPUnit_Framework_T
 			array( "^$$", array( "" ) ),
 			array( "^$ ", array() ),
 			array( "^[- ]$", array( "-", " " ) ),
+			array( "^[ -]$", array( "-", " " ) ),
 		);
 	}
 	

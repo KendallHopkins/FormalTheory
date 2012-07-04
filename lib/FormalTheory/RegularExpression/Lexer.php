@@ -168,7 +168,7 @@ class FormalTheory_RegularExpression_Lexer
 						$last_is_escape = TRUE;
 						break;
 					case '-':
-						if( $tokens ) {
+						if( $tokens && $this->_regex_pieces[$this->_current_offset+1] !== "]" ) {
 							$prev_token = array_pop( $tokens );
 							$this->_current_offset++;
 							if( $this->_regex_pieces[$this->_current_offset] === '\\' ) {
