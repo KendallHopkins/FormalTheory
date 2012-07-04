@@ -1,5 +1,11 @@
 <?php
 
+/*
+Examples:
+1{1,5}1{3} -> 1{4,8}
+1{2}1{3,4}1* -> 1{5,}
+*/
+
 class FormalTheory_RegularExpression_Optimizer_Strategy_GroupRepeatsInRegex extends FormalTheory_RegularExpression_Optimizer_Strategy
 {
 	
