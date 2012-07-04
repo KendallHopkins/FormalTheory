@@ -61,10 +61,14 @@ class FormalTheory_RegularExpression_Optimizer_Strategy_FolderIntoRepeat extends
 				case "FormalTheory_RegularExpression_Token_Regex":
 					$match_array = $current_repeat_token->getTokens();
 					break;
+				case "FormalTheory_RegularExpression_Token_Repeat":
+					if( $current_repeat_token->getMinNumber() === $current_repeat_token->getMaxNumber() ) {
+						$match_array = array_fill( 0, $current_repeat_token->getMinNumber(), $current_repeat_token->getToken() );
+						break;
+					}
 				case "FormalTheory_RegularExpression_Token_Union":
 				case "FormalTheory_RegularExpression_Token_Set":
 				case "FormalTheory_RegularExpression_Token_Constant":
-				case "FormalTheory_RegularExpression_Token_Repeat":
 				case "FormalTheory_RegularExpression_Token_Special":
 					$match_array = array( $current_repeat_token );
 					break;
