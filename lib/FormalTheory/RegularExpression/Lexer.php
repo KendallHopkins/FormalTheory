@@ -168,21 +168,7 @@ class FormalTheory_RegularExpression_Lexer
 						$last_is_escape = TRUE;
 						break;
 					case '-':
-						if( $tokens && $this->_regex_pieces[$this->_current_offset+1] !== "]" ) {
-							$prev_token = array_pop( $tokens );
-							$this->_current_offset++;
-							if( $this->_regex_pieces[$this->_current_offset] === '\\' ) {
-								$this->_current_offset++;
-								$next_token = $this->_lex_set_getEscaped( $this->_regex_pieces[$this->_current_offset] );
-							} else {
-								$next_token = $this->_regex_pieces[$this->_current_offset];
-							}
-							foreach( range( $prev_token, $next_token ) as $range_token ) {
-								$tokens[] = (string)$range_token;
-							}
-						} else {
-							$tokens[] = "-";
-						}
+						$tokens[] = NULL;
 						break;
 					case ']':
 						break 2;
@@ -198,7 +184,38 @@ class FormalTheory_RegularExpression_Lexer
 		if( $current_piece !== ']' ) {
 			throw new FormalTheory_RegularExpression_Exception_Lex( "unexpectedly found end while in set" );
 		}
-		return new FormalTheory_RegularExpression_Token_Set( $tokens, ! $is_negative );
+		$chars = array();
+		while( ( $offset = array_search( NULL, $tokens, TRUE ) ) !== FALSE ) {
+			if( $offset === 0 || $offset === count( $tokens ) - 1 ) {
+				$tokens[$offset] = "-";
+			} else {
+				$prev_token = $tokens[$offset-1];
+				$next_token = $tokens[$offset+1];
+				if( is_null( $prev_token ) ) $prev_token = "-";
+				if( is_null( $next_token ) ) $next_token = "-";
+				if( is_array( $prev_token ) || is_array( $next_token ) ) {
+					$tokens[$offset] = "-";
+				} else {
+					unset( $tokens[$offset-1] );
+					unset( $tokens[$offset] );
+					unset( $tokens[$offset+1] );
+					foreach( range( $prev_token, $next_token ) as $range_token ) {
+						$chars[] = (string)$range_token;
+					}
+					$tokens = array_values( $tokens );
+				}
+			}
+		}
+		foreach( $tokens as $token ) {
+			if( is_string( $token ) ) {
+				$chars[] = $token;
+			} else if( is_array( $token ) ) {
+				$chars = array_merge( $chars, $token );
+			} else {
+				throw new RuntimeException( "shouldn't be reached" );
+			}
+		}
+		return new FormalTheory_RegularExpression_Token_Set( $chars, ! $is_negative );
 	}
 	
 	private function _lex_set_getEscaped( $char )
@@ -209,6 +226,10 @@ class FormalTheory_RegularExpression_Lexer
 			case 'n': return "\n";
 			case 'v': return "\v";
 			case 'x': return $this->_lex_hex();
+		}
+		$groups = FormalTheory_RegularExpression_Token_Set::getGroups() + FormalTheory_RegularExpression_Token_Set::getInverseGroups();
+		if( array_key_exists( $char, $groups ) ) {
+			return $groups[$char];
 		}
 		return $char;
 	}
