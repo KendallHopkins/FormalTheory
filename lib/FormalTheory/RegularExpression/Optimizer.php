@@ -68,7 +68,7 @@ class FormalTheory_RegularExpression_Optimizer
 			
 			if( array_key_exists( $token_class, $this->_strategies_by_qualified_class_name ) ) {
 				foreach( $this->_strategies_by_qualified_class_name[$token_class] as $strategy ) {
-					if( $strategy::IS_SAFE && $strategy->qualifier( $token ) ) {
+					if( $strategy->qualifier( $token ) ) {
 						$new_token = $strategy->run( $token );
 						if( $new_token === FALSE ) continue;
 						if( ! $new_token instanceof FormalTheory_RegularExpression_Token ) {

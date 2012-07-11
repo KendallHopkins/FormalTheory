@@ -9,7 +9,6 @@ Examples:
 class FormalTheory_RegularExpression_Optimizer_Strategy_LambdaInUnion extends FormalTheory_RegularExpression_Optimizer_Strategy
 {
 	
-	const IS_SAFE = TRUE;
 	const COST = 0;
 	const SUCCESS = 1;
 	
