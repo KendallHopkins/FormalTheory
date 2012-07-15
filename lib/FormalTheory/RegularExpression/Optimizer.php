@@ -32,6 +32,7 @@ class FormalTheory_RegularExpression_Optimizer
 	{
 		if( is_null( $strategy_class_names ) ) {
 			$strategy_class_names = self::getStrategyClassNames();
+			sort( $strategy_class_names );
 		}
 		$this->_strategies = array();
 		$this->_strategies_by_qualified_class_name = array();
