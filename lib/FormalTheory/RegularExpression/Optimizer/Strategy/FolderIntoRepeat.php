@@ -75,6 +75,7 @@ class FormalTheory_RegularExpression_Optimizer_Strategy_FolderIntoRepeat extends
 					throw new RuntimeException( "bad class: ".get_class( $current_repeat_token ) );
 			}
 			$match_array_count = count( $match_array );
+			if( $match_array_count === 0 ) continue;
 			
 			$matched_before = 0;
 			$matched_after = 0;
