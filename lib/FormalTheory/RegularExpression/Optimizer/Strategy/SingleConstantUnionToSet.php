@@ -21,7 +21,7 @@ class FormalTheory_RegularExpression_Optimizer_Strategy_SingleConstantUnionToSet
 	{
 		$count = 0;
 		foreach( $token->getTokens() as $sub_token ) {
-			if( $sub_token instanceof FormalTheory_RegularExpression_Token_Constant ) {
+			if( $sub_token instanceof FormalTheory_RegularExpression_Token_Constant || $sub_token instanceof FormalTheory_RegularExpression_Token_Set ) {
 				if( ++$count >= 2 ) {
 					return TRUE;
 				}

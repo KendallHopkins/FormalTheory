@@ -31,30 +31,43 @@ class FormalTheory_RegularExpression_Optimizer_Strategy_RemoveEnds extends Forma
 	
 	function run( FormalTheory_RegularExpression_Token $token )
 	{
-		$did_change = FALSE;
+		$is_wild_repeat = function( FormalTheory_RegularExpression_Token $token ) {
+			return
+				$token instanceof FormalTheory_RegularExpression_Token_Repeat &&
+				is_null( $token->getMaxNumber() ) &&
+				$token->getToken() instanceof FormalTheory_RegularExpression_Token_Set &&
+				(string)$token->getToken() === "[^]";
+		};
+		
 		$sub_tokens = $token->getTokens();
-		if( $sub_tokens[0] instanceof FormalTheory_RegularExpression_Token_Special &&
+		$sub_tokens_count = count( $sub_tokens );
+		
+		$start_is_removable =
+			$sub_tokens[0] instanceof FormalTheory_RegularExpression_Token_Special &&
 			$sub_tokens[0]->isBOS() &&
-			$sub_tokens[1] instanceof FormalTheory_RegularExpression_Token_Repeat &&
-			is_null( $sub_tokens[1]->getMaxNumber() ) &&
-			$sub_tokens[1]->getToken() instanceof FormalTheory_RegularExpression_Token_Set &&
-			(string)$sub_tokens[1]->getToken() === "[^]"
-		) {
+			$is_wild_repeat( $sub_tokens[1] );
+		
+		$end_is_removeable = $sub_tokens[$sub_tokens_count-1] instanceof FormalTheory_RegularExpression_Token_Special &&
+			$sub_tokens[$sub_tokens_count-1]->isEOS() &&
+			$is_wild_repeat( $sub_tokens[$sub_tokens_count-2] );
+		
+		if( ! $start_is_removable && ! $end_is_removeable ) {
+			return FALSE;
+		}
+		
+		$wildcard_shared = $start_is_removable && $end_is_removeable && $sub_tokens_count === 3;
+		
+		if( $start_is_removable ) {
 			$did_change = TRUE;
 			array_shift( $sub_tokens );
-			$repeat = array_shift( $sub_tokens );
-			if( $repeat->getMinNumber() > 0 ) {
-				array_unshift( $sub_tokens, new FormalTheory_RegularExpression_Token_Repeat( $repeat->getToken(), $repeat->getMinNumber(), $repeat->getMinNumber() ) );
+			if( ! $wildcard_shared ) {
+				$repeat = array_shift( $sub_tokens );
+				if( $repeat->getMinNumber() > 0 ) {
+					array_unshift( $sub_tokens, new FormalTheory_RegularExpression_Token_Repeat( $repeat->getToken(), $repeat->getMinNumber(), $repeat->getMinNumber() ) );
+				}
 			}
 		}
-		$sub_tokens_count = count( $sub_tokens );
-		if( $sub_tokens[$sub_tokens_count-1] instanceof FormalTheory_RegularExpression_Token_Special &&
-			$sub_tokens[$sub_tokens_count-1]->isEOS() &&
-			$sub_tokens[$sub_tokens_count-2] instanceof FormalTheory_RegularExpression_Token_Repeat &&
-			is_null( $sub_tokens[$sub_tokens_count-2]->getMaxNumber() ) &&
-			$sub_tokens[$sub_tokens_count-2]->getToken() instanceof FormalTheory_RegularExpression_Token_Set &&
-			(string)$sub_tokens[$sub_tokens_count-2]->getToken() === "[^]"
-		) {
+		if( $end_is_removeable ) {
 			$did_change = TRUE;
 			array_pop( $sub_tokens );
 			$repeat = array_pop( $sub_tokens );
