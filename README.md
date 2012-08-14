@@ -17,6 +17,7 @@ FormalTheory is a library that allows for manipulation and conversion of NFAs, D
  - FA intersections
  - FA unions
  - FA negation
+ - FA reverse
  - FA to Regex conversion (basic)
  - Heavy Unit Test Coverage
  - Modern Autoloading Support

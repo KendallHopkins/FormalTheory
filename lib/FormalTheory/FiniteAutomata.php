@@ -331,6 +331,37 @@ EOT;
 		}
 	}
 	
+	function reverse()
+	{
+		$closure_array = array();
+		foreach( $this->_states as $state ) {
+			$transition_lookup_array = $state->getTransitionLookupArray();
+			$closure_array[] = function() use ( $transition_lookup_array, $state ) {
+				foreach( $transition_lookup_array as $transition_symbol => $next_states ) {
+					foreach( $next_states as $next_state ) {
+						if( $state->getHash() !== $next_state->getHash() ) {
+							$state->deleteTransition( (string)$transition_symbol, $next_state );
+							$next_state->addTransition( (string)$transition_symbol, $state );
+						}
+					}
+				}
+			};
+		}
+		foreach( $closure_array as $closure ) {
+			$closure();
+		}
+		
+		$start_state = $this->getStartState();
+		$new_start_state = $this->createState();
+		$this->setStartState( $new_start_state );
+		foreach( $this->_states as $state ) {
+			if( ! $state->getIsFinal() ) continue;
+			$new_start_state->addTransition( "", $state );
+			$state->setIsFinal( FALSE );
+		}
+		$start_state->setIsFinal( TRUE );
+	}
+	
 	function isDeterministic()
 	{
 		foreach( $this->_states as $state ) {
