@@ -604,7 +604,8 @@ EOT;
 			$table = $empty_table;
 			foreach( $lookup_array as $transition => $states ) {
 				foreach( array_keys( $states ) as $state_hash ) {
-					$table[$state_hash][] = new FormalTheory_RegularExpression_Token_Regex( array( new FormalTheory_RegularExpression_Token_Constant( (string)$transition ) ), TRUE );
+					$sub_tokens = $transition === "" ? array() : array( new FormalTheory_RegularExpression_Token_Constant( (string)$transition ) );
+					$table[$state_hash][] = new FormalTheory_RegularExpression_Token_Regex( $sub_tokens, TRUE );
 				}
 			}
 			return $table;
