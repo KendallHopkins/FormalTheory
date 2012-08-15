@@ -1,0 +1,41 @@
+{
+	"name": "KendallHopkins/FormalTheory",
+	"type": "library",
+	"description": "FormalTheory is a library that allows for manipulation and conversion of NFAs, DFAs and Regular Expressions.",
+	"version": "1.0.0",
+	"keywords": [
+		"formal",
+		"theory",
+		"regex",
+		"regular",
+		"expression",
+		"dfa",
+		"nfa",
+		"fa",
+		"deterministic",
+		"nondeterministic",
+		"finite",
+		"automata",
+		"lexer",
+		"transform",
+		"optimizer",
+		"state"
+	],
+	"homepage": "https://github.com/KendallHopkins/FormalTheory",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Kendall Hopkins",
+			"email": "softwareelves@gmail.com",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": ">=5.3.0"
+	},
+	"autoload": {
+		"psr-0": {
+			"FormalTheory": "lib/FormalTheory/"
+		}
+	}
+}
