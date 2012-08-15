@@ -1,5 +1,5 @@
 {
-	"name": "KendallHopkins/FormalTheory",
+	"name": "kendall-hopkins/formal-theory",
 	"type": "library",
 	"description": "FormalTheory is a library that allows for manipulation and conversion of NFAs, DFAs and Regular Expressions.",
 	"version": "1.0.0",
