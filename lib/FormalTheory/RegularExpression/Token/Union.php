@@ -15,7 +15,7 @@ class FormalTheory_RegularExpression_Token_Union extends FormalTheory_RegularExp
 		$this->_regex_array = array_values( $regex_array );
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		return implode( "|", $this->_regex_array );
 	}

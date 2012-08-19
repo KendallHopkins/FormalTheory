@@ -17,7 +17,7 @@ class FormalTheory_RegularExpression_Token_Repeat extends FormalTheory_RegularEx
 		$this->_second_number = $second_number;
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		if( $this->_first_number === 0 && $this->_second_number === 0 ) {
 			return "";

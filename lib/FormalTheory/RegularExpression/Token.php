@@ -3,11 +3,21 @@
 abstract class FormalTheory_RegularExpression_Token
 {
 	
-	abstract function __toString();
+	private $_to_string = NULL;
+	
+	abstract protected function _toString();
 	
 	abstract function getMatches();
 	
 	abstract protected function _compare( $token );
+	
+	function __toString()
+	{
+		if( is_null( $this->_to_string ) ) {
+			$this->_to_string = $this->_toString();
+		}
+		return $this->_to_string;
+	}
 	
 	function compare( self $token )
 	{

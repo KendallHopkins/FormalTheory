@@ -44,7 +44,7 @@ class FormalTheory_RegularExpression_Token_Constant extends FormalTheory_Regular
 		return $this->_string;
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		return self::escapeChar( $this->_string );
 	}

@@ -22,7 +22,7 @@ class FormalTheory_RegularExpression_Token_Regex extends FormalTheory_RegularExp
 		return $this->_token_array;
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		return implode( "", array_map( function( $token ) {
 			if( $token instanceof FormalTheory_RegularExpression_Token_Union ) {

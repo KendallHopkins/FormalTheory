@@ -21,7 +21,7 @@ class FormalTheory_RegularExpression_Token_Special extends FormalTheory_RegularE
 		$this->_special = $special;
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		return $this->_special;
 	}

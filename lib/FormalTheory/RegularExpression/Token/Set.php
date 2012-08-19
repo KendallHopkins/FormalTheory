@@ -63,7 +63,7 @@ class FormalTheory_RegularExpression_Token_Set extends FormalTheory_RegularExpre
 		$this->_is_positive = (bool)$is_positive;
 	}
 	
-	function __toString()
+	function _toString()
 	{
 		$char_array = $this->charArray();
 		if( count( $char_array ) === 127 && ! in_array( "\n", $char_array ) ) return ".";
