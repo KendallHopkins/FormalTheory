@@ -9,11 +9,11 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="test/bootstrap.php"
+         bootstrap="vendor/autoload.php"
 >
-	<testsuites>
-		<testsuite name="FormalTheory Suite">
-			<directory>./test</directory>
-		</testsuite>
-	</testsuites>
+    <testsuites>
+        <testsuite name="FormalTheory Suite">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>
