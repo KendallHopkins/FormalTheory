@@ -42,8 +42,11 @@ abstract class FormalTheory_RegularExpression_Token
 	
 	abstract function getFiniteAutomataClosure();
 	
-	function getNFA()
+	function getNFA( array $alphabet = null )
 	{
+		if( is_null( $alphabet ) ) {
+			$alphabet = array_map( "chr", range( 0, 127 ) );
+		}
 		$create_loop_state = function( FormalTheory_FiniteAutomata $fa ) {
 			$state = $fa->createState();
 			foreach( $fa->getAlphabet() as $symbol ) {
@@ -52,7 +55,7 @@ abstract class FormalTheory_RegularExpression_Token
 			return $state;
 		};
 		
-		$fa = new FormalTheory_FiniteAutomata( array_map( "chr", range( 0, 127 ) ) );
+		$fa = new FormalTheory_FiniteAutomata( $alphabet );
 		
 		$start_states = $fa->createStates( 4 );
 		$end_states = $fa->createStates( 4 );
@@ -76,9 +79,9 @@ abstract class FormalTheory_RegularExpression_Token
 		return $fa;
 	}
 	
-	function getDFA()
+	function getDFA( array $alphabet = null )
 	{
-		$nfa = $this->getNFA();
+		$nfa = $this->getNFA( $alphabet );
 		$dfa = $nfa->isDeterministic() ? $nfa : FormalTheory_FiniteAutomata::determinize( $nfa );
 		unset( $nfa );
 		$dfa->minimize();
